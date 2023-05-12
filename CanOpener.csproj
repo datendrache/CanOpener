@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+	<PackageId>Proliferation.CanOpener</PackageId>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	<Title>CanOpener</Title>
+    <Description>Automatically detects and reads from multiple compressed file types regardless of file extension</Description>
+	<Authors>Data Dragon</Authors>
+    <Copyright>Copyright 2003-2023 by Eric Knight</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FatumCore" Version="1.0.0" />
+    <PackageReference Include="SharpCompress" Version="0.33.0" />
+  </ItemGroup>
+
+</Project>
