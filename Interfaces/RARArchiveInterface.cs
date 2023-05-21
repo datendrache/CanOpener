@@ -1,14 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpCompress.Archives.Rar;
-using FatumCore;
-using AbsolutionLib.Unraveler;
+﻿//   CanOpener -- A library for identifying and recursively opening archives
+//
+//   Copyright (C) 2003-2023 Eric Knight
+//   This software is distributed under the GNU Public v3 License
+//
+//   This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
 
-namespace AbsolutionLib.Unraveler.Interfaces
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+using SharpCompress.Archives.Rar;
+using Proliferation.Fatum;
+
+namespace Proliferation.CanOpener.Interfaces
 {
     public class RARArchiveInterface : UniCanInterface
     {
@@ -98,19 +109,19 @@ namespace AbsolutionLib.Unraveler.Interfaces
                     if (current.IsDirectory == false)
                     {
                         Tree newFile = new Tree();
-                        newFile.addElement("Length", current.Size.ToString());
+                        newFile.AddElement("Length", current.Size.ToString());
                         string filename = Path.GetFileName(current.Key);
                         string directory = Directory;
-                        newFile.addElement("Filename", filename);
-                        newFile.addElement("Directory", directory + "\\");
-                        newFile.addElement("Extension", CanTools.getExtension(filename));
-                        newFile.addElement("Creation", current.CreatedTime.ToString());
-                        newFile.addElement("Accessed", current.LastAccessedTime.ToString());
-                        newFile.addElement("Modified", current.LastModifiedTime.ToString());
-                        newFile.addElement("Archived", current.ArchivedTime.ToString());
-                        newFile.addElement("Encrypted", current.IsEncrypted.ToString());
-                        newFile.addElement("Split", current.IsSplitAfter.ToString());
-                        result.addNode(newFile, "File");
+                        newFile.AddElement("Filename", filename);
+                        newFile.AddElement("Directory", directory + "\\");
+                        newFile.AddElement("Extension", CanTools.getExtension(filename));
+                        newFile.AddElement("Creation", current.CreatedTime.ToString());
+                        newFile.AddElement("Accessed", current.LastAccessedTime.ToString());
+                        newFile.AddElement("Modified", current.LastModifiedTime.ToString());
+                        newFile.AddElement("Archived", current.ArchivedTime.ToString());
+                        newFile.AddElement("Encrypted", current.IsEncrypted.ToString());
+                        newFile.AddElement("Split", current.IsSplitAfter.ToString());
+                        result.AddNode(newFile, "File");
                     }
                     else
                     {
@@ -176,18 +187,18 @@ namespace AbsolutionLib.Unraveler.Interfaces
         public Tree getDetails()
         {
             Tree result = new Tree();
-            result.addElement("Length", RARArchiveEntry.Size.ToString());
-            result.addElement("Creation", RARArchiveEntry.CreatedTime.ToString());
-            result.addElement("Accessed", RARArchiveEntry.LastAccessedTime.ToString());
-            result.addElement("Modified", RARArchiveEntry.LastModifiedTime.ToString());
-            result.addElement("Archived", RARArchiveEntry.ArchivedTime.ToString());
+            result.AddElement("Length", RARArchiveEntry.Size.ToString());
+            result.AddElement("Creation", RARArchiveEntry.CreatedTime.ToString());
+            result.AddElement("Accessed", RARArchiveEntry.LastAccessedTime.ToString());
+            result.AddElement("Modified", RARArchiveEntry.LastModifiedTime.ToString());
+            result.AddElement("Archived", RARArchiveEntry.ArchivedTime.ToString());
             if (RARArchiveEntry.IsEncrypted == true)
             {
-                result.addElement("Encrypted", RARArchiveEntry.IsEncrypted.ToString().ToLower());
+                result.AddElement("Encrypted", RARArchiveEntry.IsEncrypted.ToString().ToLower());
             }
             if (RARArchiveEntry.IsSplitAfter == true)
             {
-                result.addElement("Split", RARArchiveEntry.IsSplitAfter.ToString().ToLower());
+                result.AddElement("Split", RARArchiveEntry.IsSplitAfter.ToString().ToLower());
             }
 
             return result;

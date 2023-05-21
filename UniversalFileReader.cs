@@ -1,14 +1,29 @@
-﻿using System;
-using System.IO;
-using FatumCore;
+﻿//   CanOpener -- A library for identifying and recursively opening archives
+//
+//   Copyright (C) 2003-2023 Eric Knight
+//   This software is distributed under the GNU Public v3 License
+//
+//   This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
 
-namespace AbsolutionLib.Unraveler
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+using Proliferation.Fatum;
+
+namespace Proliferation.CanOpener
 {
     public class UniversalFileReader
     {
         public string Filename = "";
         int FileType = 0;
-        long TotalExtracted = 0;
         BinaryReader infile;
         public string log = "";
         Boolean isOpen = false;
@@ -54,7 +69,6 @@ namespace AbsolutionLib.Unraveler
                 try
                 {
                     amountread = CurrentStream.Read(Buffer, count);
-                    TotalExtracted += amountread;
                 }
                 catch (Exception)
                 {
@@ -97,7 +111,7 @@ namespace AbsolutionLib.Unraveler
                 BinaryReader infile = new BinaryReader(File.OpenRead(Filename));
                 int readData = infile.Read(BUFFER, 0, 512);
                 Tree identification = FileID.Identify(filename, BUFFER, readData, false);
-                string confirmedtype = identification.getElement("Confirm").ToLower();
+                string confirmedtype = identification.GetElement("Confirm").ToLower();
                 switch (confirmedtype)
                 {
                     case ".zip": result = 1; break;
@@ -112,7 +126,7 @@ namespace AbsolutionLib.Unraveler
                     default: FileType = 0; break;
                 }
                 infile.Close();
-                identification.dispose();
+                identification.Dispose();
             }
             catch (Exception)
             {

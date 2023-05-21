@@ -1,15 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpCompress;
-using SharpCompress.Archives.Zip;
-using FatumCore;
-using AbsolutionLib.Unraveler;
+﻿//   CanOpener -- A library for identifying and recursively opening archives
+//
+//   Copyright (C) 2003-2023 Eric Knight
+//   This software is distributed under the GNU Public v3 License
+//
+//   This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
 
-namespace AbsolutionLib.Unraveler.Interfaces
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+using SharpCompress.Archives.Zip;
+using Proliferation.Fatum;
+
+namespace Proliferation.CanOpener.Interfaces
 {
     public class ZIPArchiveInterface : UniCanInterface
     {
@@ -99,14 +109,14 @@ namespace AbsolutionLib.Unraveler.Interfaces
                 if (current.IsDirectory == false)
                 {
                     Tree newFile = new Tree();
-                    newFile.addElement("Length", current.Size.ToString());
-                    newFile.addElement("Creation", current.CreatedTime.ToString());
-                    newFile.addElement("Accessed", current.LastAccessedTime.ToString());
-                    newFile.addElement("Modified", current.LastModifiedTime.ToString());
-                    newFile.addElement("Archived", current.ArchivedTime.ToString());
-                    newFile.addElement("Encrypted", current.IsEncrypted.ToString());
-                    newFile.addElement("Split", current.IsSplitAfter.ToString());
-                    result.addNode(newFile, "File");
+                    newFile.AddElement("Length", current.Size.ToString());
+                    newFile.AddElement("Creation", current.CreatedTime.ToString());
+                    newFile.AddElement("Accessed", current.LastAccessedTime.ToString());
+                    newFile.AddElement("Modified", current.LastModifiedTime.ToString());
+                    newFile.AddElement("Archived", current.ArchivedTime.ToString());
+                    newFile.AddElement("Encrypted", current.IsEncrypted.ToString());
+                    newFile.AddElement("Split", current.IsSplitAfter.ToString());
+                    result.AddNode(newFile, "File");
 
                 }
             }
@@ -162,18 +172,18 @@ namespace AbsolutionLib.Unraveler.Interfaces
         public Tree getDetails()
             {
                 Tree result = new Tree();
-                result.addElement("Length", ZIPArchiveEntry.Size.ToString());
-                result.addElement("Creation", ZIPArchiveEntry.CreatedTime.ToString());
-                result.addElement("Accessed", ZIPArchiveEntry.LastAccessedTime.ToString());
-                result.addElement("Modified", ZIPArchiveEntry.LastModifiedTime.ToString());
-                result.addElement("Archived", ZIPArchiveEntry.ArchivedTime.ToString());
+                result.AddElement("Length", ZIPArchiveEntry.Size.ToString());
+                result.AddElement("Creation", ZIPArchiveEntry.CreatedTime.ToString());
+                result.AddElement("Accessed", ZIPArchiveEntry.LastAccessedTime.ToString());
+                result.AddElement("Modified", ZIPArchiveEntry.LastModifiedTime.ToString());
+                result.AddElement("Archived", ZIPArchiveEntry.ArchivedTime.ToString());
                 if (ZIPArchiveEntry.IsEncrypted == true)
                 {
-                    result.addElement("Encrypted", ZIPArchiveEntry.IsEncrypted.ToString().ToLower());
+                    result.AddElement("Encrypted", ZIPArchiveEntry.IsEncrypted.ToString().ToLower());
                 }
                 if (ZIPArchiveEntry.IsSplitAfter == true)
                 {
-                    result.addElement("Split", ZIPArchiveEntry.IsSplitAfter.ToString().ToLower());
+                    result.AddElement("Split", ZIPArchiveEntry.IsSplitAfter.ToString().ToLower());
                 }
                 return result;
             }

@@ -1,14 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SharpCompress.Archives.SevenZip;
-using FatumCore;
-using AbsolutionLib.Unraveler;
+﻿//   CanOpener -- A library for identifying and recursively opening archives
+//
+//   Copyright (C) 2003-2023 Eric Knight
+//   This software is distributed under the GNU Public v3 License
+//
+//   This program is free software: you can redistribute it and/or modify
+//   it under the terms of the GNU General Public License as published by
+//   the Free Software Foundation, either version 3 of the License, or
+//   (at your option) any later version.
 
-namespace AbsolutionLib.Unraveler.Interfaces
+//   This program is distributed in the hope that it will be useful,
+//   but WITHOUT ANY WARRANTY; without even the implied warranty of
+//   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//   GNU General Public License for more details.
+
+//   You should have received a copy of the GNU General Public License
+//   along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+using SharpCompress.Archives.SevenZip;
+using Proliferation.Fatum;
+
+namespace Proliferation.CanOpener.Interfaces
 {
     public class SZArchiveInterface : UniCanInterface
     {
@@ -90,10 +101,10 @@ namespace AbsolutionLib.Unraveler.Interfaces
                 if (current.IsDirectory == false)
                 {
                     Tree newFile = new Tree();
-                    newFile.addElement("Length", current.Size.ToString());
-                    newFile.addElement("Encrypted", current.IsEncrypted.ToString());
-                    newFile.addElement("Split", current.IsSplitAfter.ToString());
-                    result.addNode(newFile, "File");
+                    newFile.AddElement("Length", current.Size.ToString());
+                    newFile.AddElement("Encrypted", current.IsEncrypted.ToString());
+                    newFile.AddElement("Split", current.IsSplitAfter.ToString());
+                    result.AddNode(newFile, "File");
                 }
             }
             return result;
@@ -150,18 +161,18 @@ namespace AbsolutionLib.Unraveler.Interfaces
         public Tree getDetails()
         {
             Tree result = new Tree();
-            result.addElement("Length", SZArchiveEntry.Size.ToString());
-            result.addElement("Creation", SZArchiveEntry.CreatedTime.ToString());
-            result.addElement("Accessed", SZArchiveEntry.LastAccessedTime.ToString());
-            result.addElement("Modified", SZArchiveEntry.LastModifiedTime.ToString());
-            result.addElement("Archived", SZArchiveEntry.ArchivedTime.ToString());
+            result.AddElement("Length", SZArchiveEntry.Size.ToString());
+            result.AddElement("Creation", SZArchiveEntry.CreatedTime.ToString());
+            result.AddElement("Accessed", SZArchiveEntry.LastAccessedTime.ToString());
+            result.AddElement("Modified", SZArchiveEntry.LastModifiedTime.ToString());
+            result.AddElement("Archived", SZArchiveEntry.ArchivedTime.ToString());
             if (SZArchiveEntry.IsEncrypted == true)
             {
-                result.addElement("Encrypted", SZArchiveEntry.IsEncrypted.ToString().ToLower());
+                result.AddElement("Encrypted", SZArchiveEntry.IsEncrypted.ToString().ToLower());
             }
             if (SZArchiveEntry.IsSplitAfter == true)
             {
-                result.addElement("Split", SZArchiveEntry.IsSplitAfter.ToString().ToLower());
+                result.AddElement("Split", SZArchiveEntry.IsSplitAfter.ToString().ToLower());
             }
 
             return result;

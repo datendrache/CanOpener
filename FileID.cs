@@ -1,6 +1,8 @@
-﻿//   Absolution - Computer Forensics Collection, Analysis and Reporting Tool
-//   Copyright (C) 2006-2011 by Eric Knight
-
+﻿//   CanOpener -- A library for identifying and recursively opening archives
+//
+//   Copyright (C) 2003-2023 Eric Knight
+//   This software is distributed under the GNU Public v3 License
+//
 //   This program is free software: you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
 //   the Free Software Foundation, either version 3 of the License, or
@@ -12,17 +14,11 @@
 //   GNU General Public License for more details.
 
 //   You should have received a copy of the GNU General Public License
-//   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//   Copyright (C) 2003-2019 Eric Knight
+using Proliferation.Fatum;
 
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
-using FatumCore;
-
-namespace AbsolutionLib
+namespace Proliferation.CanOpener
 {
     public class FileID
     {
@@ -73,66 +69,66 @@ namespace AbsolutionLib
             string Accessed = newInfo.LastAccessTime.ToUniversalTime().ToString();
             string Modified = newInfo.LastWriteTime.ToUniversalTime().ToString();
 
-            newFileInformation.setElement("Length", FileLength);
-            newFileInformation.setElement("Extension", Extension);
-            newFileInformation.setElement("Filename", Filename);
-            newFileInformation.setElement("Directory", removeSlashes(Directory) + "\\");
-            newFileInformation.setElement("Creation", Creation);
-            newFileInformation.setElement("Accessed", Accessed);
-            newFileInformation.setElement("Modified", Modified);
+            newFileInformation.SetElement("Length", FileLength);
+            newFileInformation.SetElement("Extension", Extension);
+            newFileInformation.SetElement("Filename", Filename);
+            newFileInformation.SetElement("Directory", removeSlashes(Directory) + "\\");
+            newFileInformation.SetElement("Creation", Creation);
+            newFileInformation.SetElement("Accessed", Accessed);
+            newFileInformation.SetElement("Modified", Modified);
 
             FileAttributes f = newInfo.Attributes;
 
             if ((f & FileAttributes.Archive) == FileAttributes.Archive)
-                newFileInformation.setElement("ArchiveCandidate", "true");
+                newFileInformation.SetElement("ArchiveCandidate", "true");
             if ((f & FileAttributes.Compressed) == FileAttributes.Compressed)
             {
-                newFileInformation.setElement("Compressed", "true");
-                //newFileInformation.setElement("Search","false");
+                newFileInformation.SetElement("Compressed", "true");
+                //newFileInformation.SetElement("Search","false");
             }
             if ((f & FileAttributes.Device) == FileAttributes.Device)
-                newFileInformation.setElement("Device", "true");
+                newFileInformation.SetElement("Device", "true");
             if ((f & FileAttributes.Directory) == FileAttributes.Directory)
             {
-                newFileInformation.setElement("Search", "false");
-                newFileInformation.setElement("Directory", "true");
+                newFileInformation.SetElement("Search", "false");
+                newFileInformation.SetElement("Directory", "true");
                 Evaluate = false;
             }
             if ((f & FileAttributes.Encrypted) == FileAttributes.Encrypted)
             {
-                newFileInformation.setElement("Search", "false");
-                newFileInformation.setElement("Encrypted", "true");
+                newFileInformation.SetElement("Search", "false");
+                newFileInformation.SetElement("Encrypted", "true");
             }
             if ((f & FileAttributes.Hidden) == FileAttributes.Hidden)
-                newFileInformation.setElement("Hidden", "true");
+                newFileInformation.SetElement("Hidden", "true");
             if ((f & FileAttributes.NotContentIndexed) == FileAttributes.NotContentIndexed)
-                newFileInformation.setElement("NotContentIndexed", "true");
+                newFileInformation.SetElement("NotContentIndexed", "true");
             if ((f & FileAttributes.Offline) == FileAttributes.Offline)
             {
-                newFileInformation.setElement("Offline", "true");
-                newFileInformation.setElement("Search", "false");
+                newFileInformation.SetElement("Offline", "true");
+                newFileInformation.SetElement("Search", "false");
                 Evaluate = false;
             }
             if ((f & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                newFileInformation.setElement("ReadOnly", "true");
+                newFileInformation.SetElement("ReadOnly", "true");
             if ((f & FileAttributes.ReparsePoint) == FileAttributes.ReparsePoint)
             {
-                newFileInformation.setElement("ReparsePoint", "true");
-                newFileInformation.setElement("Search", "false");
+                newFileInformation.SetElement("ReparsePoint", "true");
+                newFileInformation.SetElement("Search", "false");
             }
             if ((f & FileAttributes.SparseFile) == FileAttributes.SparseFile)
-                newFileInformation.setElement("SparseFile", "true");
+                newFileInformation.SetElement("SparseFile", "true");
             if ((f & FileAttributes.System) == FileAttributes.System)
-                newFileInformation.setElement("System", "true");
+                newFileInformation.SetElement("System", "true");
             if ((f & FileAttributes.Temporary) == FileAttributes.Temporary)
-                newFileInformation.setElement("Temporary", "true");
+                newFileInformation.SetElement("Temporary", "true");
 
             if (Evaluate)
             {
                 identifyChunk(newFileInformation, Chunk, ChunkSize, keepCount);
             }
 
-            string chunktype = newFileInformation.getElement("Type");
+            string chunktype = newFileInformation.GetElement("Type");
             if (chunktype != null)
             {
                 switch (chunktype)
@@ -140,7 +136,7 @@ namespace AbsolutionLib
                     case "Windows Link":
                     case "REGISTRYHIVE":
                     case "REGTRANS-MS":
-                        newFileInformation.setElement("Search", "false");
+                        newFileInformation.SetElement("Search", "false");
                         break;
                 }
             }
@@ -163,9 +159,9 @@ namespace AbsolutionLib
 
             if (ChunkSize == 0)
             {
-                CFI.setElement("Empty", "true");
-                CFI.setElement("Executable", "false");
-                CFI.setElement("Text", "false");
+                CFI.SetElement("Empty", "true");
+                CFI.SetElement("Executable", "false");
+                CFI.SetElement("Text", "false");
             }
             else
             {
@@ -202,9 +198,9 @@ namespace AbsolutionLib
                         if (Chunk[1] == 0x5A)
                         {
                             Executable = true;
-                            CFI.setElement("Confirm", ".EXE");
-                            CFI.setElement("Type", "Executable");
-                            CFI.addElement("Details", "Microsoft PE/COFF Executable");
+                            CFI.SetElement("Confirm", ".EXE");
+                            CFI.SetElement("Type", "Executable");
+                            CFI.AddElement("Details", "Microsoft PE/COFF Executable");
                             Identified=true; found=true;
                         }
                     }
@@ -223,9 +219,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x46)
                                 {
                                     Executable = true;
-                                    CFI.setElement("Confirm", "Unix ELF");
-                                    CFI.setElement("Type", "Executable");
-                                    CFI.addElement("Details", "Linux/Posix ELF Format");
+                                    CFI.SetElement("Confirm", "Unix ELF");
+                                    CFI.SetElement("Type", "Executable");
+                                    CFI.AddElement("Details", "Linux/Posix ELF Format");
                                     Identified=true; found=true;
                                 }
                             }
@@ -254,9 +250,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x0a)
                                                 {
                                                     Executable = true;
-                                                    CFI.setElement("Confirm", ".LIB");
-                                                    CFI.setElement("Type", "Executable");
-                                                    CFI.addElement("Details", "C/C++ Library");
+                                                    CFI.SetElement("Confirm", ".LIB");
+                                                    CFI.SetElement("Type", "Executable");
+                                                    CFI.AddElement("Details", "C/C++ Library");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -281,9 +277,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0xBE)
                                 {
                                     Executable = true;
-                                    CFI.setElement("Confirm", ".CLASS");
-                                    CFI.setElement("Type", "Executable");
-                                    CFI.addElement("Details", "Sun Microsystems JAVA class object");
+                                    CFI.SetElement("Confirm", ".CLASS");
+                                    CFI.SetElement("Type", "Executable");
+                                    CFI.AddElement("Details", "Sun Microsystems JAVA class object");
                                     Identified=true; found=true;
                                 }
                             }
@@ -302,9 +298,9 @@ namespace AbsolutionLib
                             if (Chunk[2] == 0x53)
                             {
                                 Executable = true;
-                                CFI.setElement("Confirm", ".CWS");
-                                CFI.setElement("Type", "Executable");
-                                CFI.addElement("Details", "Adobe Shockwave v5+");
+                                CFI.SetElement("Confirm", ".CWS");
+                                CFI.SetElement("Type", "Executable");
+                                CFI.AddElement("Details", "Adobe Shockwave v5+");
                                 Identified=true; found = true;
                             }
                         }
@@ -324,9 +320,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x28)
                                 {
                                     Executable = true;
-                                    CFI.setElement("Confirm", ".CAB");
-                                    CFI.setElement("Type", "Executable");
-                                    CFI.addElement("Details", "Microsoft InstallShield v5-6 Compressed Archive");
+                                    CFI.SetElement("Confirm", ".CAB");
+                                    CFI.SetElement("Type", "Executable");
+                                    CFI.AddElement("Details", "Microsoft InstallShield v5-6 Compressed Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -343,9 +339,9 @@ namespace AbsolutionLib
                         if (Chunk[1] == 0x01)
                         {
                             Executable = true;
-                            CFI.setElement("Confirm", ".OBJ");
-                            CFI.setElement("Type", "Executable");
-                            CFI.addElement("Details", "Adobe Shockwave v5+");
+                            CFI.SetElement("Confirm", ".OBJ");
+                            CFI.SetElement("Type", "Executable");
+                            CFI.AddElement("Details", "Adobe Shockwave v5+");
                             Identified=true; found = true;
                         }
                     }
@@ -372,9 +368,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x00)
                                                 {
                                                     Executable = true;
-                                                    CFI.setElement("Confirm", ".TLB");
-                                                    CFI.setElement("Type", "Executable");
-                                                    CFI.addElement("Details", "OLE SPSS or Visual C++ Library");
+                                                    CFI.SetElement("Confirm", ".TLB");
+                                                    CFI.SetElement("Type", "Executable");
+                                                    CFI.AddElement("Details", "OLE SPSS or Visual C++ Library");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -407,9 +403,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x00)
                                                 {
                                                     Executable = true;
-                                                    CFI.setElement("Confirm", ".API");
-                                                    CFI.setElement("Type", "Executable");
-                                                    CFI.addElement("Details", "Adobe Plugin Executable");
+                                                    CFI.SetElement("Confirm", ".API");
+                                                    CFI.SetElement("Type", "Executable");
+                                                    CFI.AddElement("Details", "Adobe Plugin Executable");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -430,9 +426,9 @@ namespace AbsolutionLib
                         if (Chunk[1] == 0x5a)
                         {
                             Executable = true;
-                            CFI.setElement("Confirm", ".OBJ");
-                            CFI.setElement("Type", "Executable");
-                            CFI.addElement("Details", "Windows or DOS Executable");
+                            CFI.SetElement("Confirm", ".OBJ");
+                            CFI.SetElement("Type", "Executable");
+                            CFI.AddElement("Details", "Windows or DOS Executable");
                             Identified=true; found = true;
                         }
                     }
@@ -475,9 +471,9 @@ namespace AbsolutionLib
                                                                                 if (Chunk[15] == 0x20)
                                                                                 {
                                                                                     Executable = true;
-                                                                                    CFI.setElement("Confirm", ".PDB");
-                                                                                    CFI.setElement("Type", "Executable");
-                                                                                    CFI.addElement("Details", "Microsoft C++ Debugging Symbols File");
+                                                                                    CFI.SetElement("Confirm", ".PDB");
+                                                                                    CFI.SetElement("Type", "Executable");
+                                                                                    CFI.AddElement("Details", "Microsoft C++ Debugging Symbols File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -518,9 +514,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x2c)
                                                 {
                                                     Executable = true;
-                                                    CFI.setElement("Confirm", ".ADF");
-                                                    CFI.setElement("Type", "Executable");
-                                                    CFI.addElement("Details", "Antenna Executable File");
+                                                    CFI.SetElement("Confirm", ".ADF");
+                                                    CFI.SetElement("Type", "Executable");
+                                                    CFI.AddElement("Details", "Antenna Executable File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -552,9 +548,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x00)
                                                 {
-                                                    CFI.setElement("Confirm", ".DEX");
-                                                    CFI.setElement("Type", "Executable");
-                                                    CFI.addElement("Details", "Dalvilk Executable File");
+                                                    CFI.SetElement("Confirm", ".DEX");
+                                                    CFI.SetElement("Type", "Executable");
+                                                    CFI.AddElement("Details", "Dalvilk Executable File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -581,9 +577,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xE0)
                                 {
-                                    CFI.setElement("Confirm", ".DOC");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Word Document");
+                                    CFI.SetElement("Confirm", ".DOC");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Word Document");
                                     Identified=true; found=true;
                                 }
                             }
@@ -609,9 +605,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[646] == 0x34)
                                             {
-                                                CFI.setElement("Confirm", ".PW4");
-                                                CFI.setElement("Type", "Document");
-                                                CFI.addElement("Details", "Perfect Writer Type 4 Document");
+                                                CFI.SetElement("Confirm", ".PW4");
+                                                CFI.SetElement("Type", "Document");
+                                                CFI.AddElement("Details", "Perfect Writer Type 4 Document");
                                                 Identified = true; found = true;
                                             }
                                         }
@@ -640,9 +636,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[21] == 0x30)
                                             {
-                                                CFI.setElement("Confirm", ".PW2");
-                                                CFI.setElement("Type", "Document");
-                                                CFI.addElement("Details", "Perfect Writer Type 2 Document");
+                                                CFI.SetElement("Confirm", ".PW2");
+                                                CFI.SetElement("Type", "Document");
+                                                CFI.AddElement("Details", "Perfect Writer Type 2 Document");
                                                 Identified = true; found = true;
                                             }
                                         }
@@ -672,9 +668,9 @@ namespace AbsolutionLib
                                             if (Chunk[6] == 0x30)
                                             {
 
-                                                CFI.setElement("Confirm", ".EPD");
-                                                CFI.setElement("Type", "Document");
-                                                CFI.addElement("Details", "Unknown Business EP300 Document");
+                                                CFI.SetElement("Confirm", ".EPD");
+                                                CFI.SetElement("Type", "Document");
+                                                CFI.AddElement("Details", "Unknown Business EP300 Document");
                                                 Identified = true; found = true;
 
                                             }
@@ -705,9 +701,9 @@ namespace AbsolutionLib
                                             if (Chunk[6] == 0x53)
                                             {
 
-                                                CFI.setElement("Confirm", ".EPT");
-                                                CFI.setElement("Type", "Document");
-                                                CFI.addElement("Details", "Unknown Business EP300-Pages Document");
+                                                CFI.SetElement("Confirm", ".EPT");
+                                                CFI.SetElement("Type", "Document");
+                                                CFI.AddElement("Details", "Unknown Business EP300-Pages Document");
                                                 Identified = true; found = true;
 
                                             }
@@ -771,9 +767,9 @@ namespace AbsolutionLib
                                                                                                             {
                                                                                                                 if (Chunk[22 + i] == 0x30)
                                                                                                                 {
-                                                                                                                    CFI.setElement("Confirm", ".EPS");
-                                                                                                                    CFI.setElement("Type", "Document");
-                                                                                                                    CFI.addElement("Details", "Adobe Encapsulated PostScript File");
+                                                                                                                    CFI.SetElement("Confirm", ".EPS");
+                                                                                                                    CFI.SetElement("Type", "Document");
+                                                                                                                    CFI.AddElement("Details", "Adobe Encapsulated PostScript File");
                                                                                                                     Identified=true; found = true;
                                                                                                                     i = 40;
                                                                                                                 }
@@ -814,9 +810,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x53)
                                 {
-                                    CFI.setElement("Confirm", ".WKS");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "WKS Deskmate Worksheet");
+                                    CFI.SetElement("Confirm", ".WKS");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "WKS Deskmate Worksheet");
                                     Identified=true; found = true;
                                 }
                             }
@@ -836,9 +832,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".SHD");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows 9x Printer Spool File");
+                                    CFI.SetElement("Confirm", ".SHD");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows 9x Printer Spool File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -888,9 +884,9 @@ namespace AbsolutionLib
                                                                                         {
                                                                                             if (Chunk[18] == 0x65)
                                                                                             {
-                                                                                                CFI.setElement("Confirm", ".MNY");
-                                                                                                CFI.setElement("Type", "Document");
-                                                                                                CFI.addElement("Details", "Microsoft Money File");
+                                                                                                CFI.SetElement("Confirm", ".MNY");
+                                                                                                CFI.SetElement("Type", "Document");
+                                                                                                CFI.AddElement("Details", "Microsoft Money File");
                                                                                                 Identified=true; found=true;
                                                                                             }
                                                                                         }
@@ -921,9 +917,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x4D)
                         {
-                            CFI.setElement("Confirm", ".BMP");
-                            CFI.setElement("Type", "Picture");
-                            CFI.addElement("Details", "Microsoft Bitmap");
+                            CFI.SetElement("Confirm", ".BMP");
+                            CFI.SetElement("Type", "Picture");
+                            CFI.AddElement("Details", "Microsoft Bitmap");
                             Identified=true; found = true;
                         }
                     }
@@ -941,9 +937,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".PDF");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Adobe Portable Document Format");
+                                    CFI.SetElement("Confirm", ".PDF");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Adobe Portable Document Format");
                                     Identified=true; found=true;
                                 }
                             }
@@ -959,9 +955,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x4D)
                         {
-                            CFI.setElement("Confirm", ".PS");
-                            CFI.setElement("Type", "Document");
-                            CFI.addElement("Details", "PostScript Document");
+                            CFI.SetElement("Confirm", ".PS");
+                            CFI.SetElement("Type", "Document");
+                            CFI.AddElement("Details", "PostScript Document");
                             Identified=true; found=true;
                         }
                     }
@@ -1001,9 +997,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[14] == 0x00)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".WK1");
-                                                                                    CFI.setElement("Type", "Document");
-                                                                                    CFI.addElement("Details", "IBM Lotus 1-2-3 Workbook File v1");
+                                                                                    CFI.SetElement("Confirm", ".WK1");
+                                                                                    CFI.SetElement("Type", "Document");
+                                                                                    CFI.AddElement("Details", "IBM Lotus 1-2-3 Workbook File v1");
                                                                                     Identified=true; found=true;
                                                                                 }
                                                                             }
@@ -1050,9 +1046,9 @@ namespace AbsolutionLib
                                                                 {
                                                                     if (Chunk[11] == 0x00)
                                                                     {
-                                                                        CFI.setElement("Confirm", ".WK3");
-                                                                        CFI.setElement("Type", "Document");
-                                                                        CFI.addElement("Details", "IBM Lotus 1-2-3 Workbook File v3");
+                                                                        CFI.SetElement("Confirm", ".WK3");
+                                                                        CFI.SetElement("Type", "Document");
+                                                                        CFI.AddElement("Details", "IBM Lotus 1-2-3 Workbook File v3");
                                                                         Identified=true; found=true;
                                                                     }
                                                                 }
@@ -1088,9 +1084,9 @@ namespace AbsolutionLib
                                                 {
                                                     if (Chunk[7] == 0x00)
                                                     {
-                                                        CFI.setElement("Confirm", ".WK5");
-                                                        CFI.setElement("Type", "Document");
-                                                        CFI.addElement("Details", "IBM Lotus 1-2-3 Workbook File v5");
+                                                        CFI.SetElement("Confirm", ".WK5");
+                                                        CFI.SetElement("Type", "Document");
+                                                        CFI.AddElement("Details", "IBM Lotus 1-2-3 Workbook File v5");
                                                         Identified=true; found=true;
                                                     }
                                                 }
@@ -1122,9 +1118,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x00)
                                                 {
-                                                    CFI.setElement("Confirm", ".IDX");
-                                                    CFI.setElement("Type", "Document");
-                                                    CFI.addElement("Details", "Quicken QuickFinder Information File");
+                                                    CFI.SetElement("Confirm", ".IDX");
+                                                    CFI.SetElement("Type", "Document");
+                                                    CFI.AddElement("Details", "Quicken QuickFinder Information File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -1154,9 +1150,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[6] == 0x04)
                                                 {
-                                                        CFI.setElement("Confirm", ".WK9");
-                                                        CFI.setElement("Type", "Document");
-                                                        CFI.addElement("Details", "IBM Lotus 1-2-3 Workbook File v9");
+                                                        CFI.SetElement("Confirm", ".WK9");
+                                                        CFI.SetElement("Type", "Document");
+                                                        CFI.AddElement("Details", "IBM Lotus 1-2-3 Workbook File v9");
                                                         Identified=true; found=true;
                                                 }
                                             }
@@ -1185,9 +1181,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[6] == 0x52)
                                                 {
-                                                    CFI.setElement("Confirm", ".QXD");
-                                                    CFI.setElement("Type", "Document");
-                                                    CFI.addElement("Details", "Quark Express Document");
+                                                    CFI.SetElement("Confirm", ".QXD");
+                                                    CFI.SetElement("Type", "Document");
+                                                    CFI.AddElement("Details", "Quark Express Document");
                                                     Identified=true; found=true;
                                                 }
                                             }
@@ -1210,9 +1206,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x43)
                                 {
-                                    CFI.setElement("Confirm", ".DDOC");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Deskmate Document File");
+                                    CFI.SetElement("Confirm", ".DDOC");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Deskmate Document File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1228,9 +1224,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x7D)
                         {
-                            CFI.setElement("Confirm", ".WS");
-                            CFI.setElement("Type", "Document");
-                            CFI.addElement("Details", "WordStar Document");
+                            CFI.SetElement("Confirm", ".WS");
+                            CFI.SetElement("Type", "Document");
+                            CFI.AddElement("Details", "WordStar Document");
                             Identified=true; found = true;
                         }
                     }
@@ -1244,9 +1240,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0xBE)
                         {
-                            CFI.setElement("Confirm", ".WRI");
-                            CFI.setElement("Type", "Document");
-                            CFI.addElement("Details", "Microsoft Write File");
+                            CFI.SetElement("Confirm", ".WRI");
+                            CFI.SetElement("Type", "Document");
+                            CFI.AddElement("Details", "Microsoft Write File");
                             Identified=true; found = true;
                         }
                     }
@@ -1274,9 +1270,9 @@ namespace AbsolutionLib
                                                 {
                                                     if (Chunk[32] == 0x06)
                                                     {
-                                                        CFI.setElement("Confirm", ".WB3");
-                                                        CFI.setElement("Type", "Document");
-                                                        CFI.addElement("Details", "Quattro Pro Notebook File");
+                                                        CFI.SetElement("Confirm", ".WB3");
+                                                        CFI.SetElement("Type", "Document");
+                                                        CFI.AddElement("Details", "Quattro Pro Notebook File");
                                                         Identified=true; found = true;
                                                     }
                                                 }
@@ -1301,9 +1297,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".HLP");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows Help or Index File");
+                                    CFI.SetElement("Confirm", ".HLP");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows Help or Index File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1323,9 +1319,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".HLP");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows Help or Index File");
+                                    CFI.SetElement("Confirm", ".HLP");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows Help or Index File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1345,9 +1341,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".CHI");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows Compiled Help or Index File");
+                                    CFI.SetElement("Confirm", ".CHI");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows Compiled Help or Index File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1367,9 +1363,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[95] == 0x20)
                                 {
-                                    CFI.setElement("Confirm", ".QEL");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Quicken Data File");
+                                    CFI.SetElement("Confirm", ".QEL");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Quicken Data File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1401,9 +1397,9 @@ namespace AbsolutionLib
                                                     {
                                                         if (Chunk[41] == 0x40)
                                                         {
-                                                            CFI.setElement("Confirm", ".ENL");
-                                                            CFI.setElement("Type", "Document");
-                                                            CFI.addElement("Details", "Endnote Library File");
+                                                            CFI.SetElement("Confirm", ".ENL");
+                                                            CFI.SetElement("Type", "Document");
+                                                            CFI.AddElement("Details", "Endnote Library File");
                                                             Identified=true; found = true;
                                                         }
                                                     }
@@ -1444,9 +1440,9 @@ namespace AbsolutionLib
                                                             {
                                                                 if (Chunk[10] == 0x72)
                                                                 {
-                                                                    CFI.setElement("Confirm", ".RTD");
-                                                                    CFI.setElement("Type", "Document");
-                                                                    CFI.addElement("Details", "RagTime Document");
+                                                                    CFI.SetElement("Confirm", ".RTD");
+                                                                    CFI.SetElement("Type", "Document");
+                                                                    CFI.AddElement("Details", "RagTime Document");
                                                                     Identified=true; found = true;
                                                                 }
                                                             }
@@ -1477,9 +1473,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x00)
                                         {
-                                            CFI.setElement("Confirm", ".QXD");
-                                            CFI.setElement("Type", "Document");
-                                            CFI.addElement("Details", "Intuit QuickBooks Backup File");
+                                            CFI.SetElement("Confirm", ".QXD");
+                                            CFI.SetElement("Type", "Document");
+                                            CFI.AddElement("Details", "Intuit QuickBooks Backup File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -1517,9 +1513,9 @@ namespace AbsolutionLib
                                                             {
                                                                 if (Chunk[11] == 0x52)
                                                                 {
-                                                                    CFI.setElement("Confirm", ".CPE");
-                                                                    CFI.setElement("Type", "Document");
-                                                                    CFI.addElement("Details", "Microsoft FAX Cover Sheet");
+                                                                    CFI.SetElement("Confirm", ".CPE");
+                                                                    CFI.SetElement("Type", "Document");
+                                                                    CFI.AddElement("Details", "Microsoft FAX Cover Sheet");
                                                                     Identified=true; found = true;
                                                                 }
                                                             }
@@ -1549,9 +1545,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[3] == 0x31)
                                     {
-                                        CFI.setElement("Confirm", ".SH3");
-                                        CFI.setElement("Type", "Document");
-                                        CFI.addElement("Details", "Harvard Graphics Presentation File");
+                                        CFI.SetElement("Confirm", ".SH3");
+                                        CFI.SetElement("Type", "Document");
+                                        CFI.AddElement("Details", "Harvard Graphics Presentation File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -1580,9 +1576,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x53)
                                                 {
-                                                    CFI.setElement("Confirm", ".LIT");
-                                                    CFI.setElement("Type", "Document");
-                                                    CFI.addElement("Details", "Microsoft Reader eBook File");
+                                                    CFI.SetElement("Confirm", ".LIT");
+                                                    CFI.SetElement("Type", "Document");
+                                                    CFI.AddElement("Details", "Microsoft Reader eBook File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -1628,9 +1624,9 @@ namespace AbsolutionLib
                                                                     {
                                                                         if (Chunk[13] == 0x00)
                                                                         {
-                                                                            CFI.setElement("Confirm", ".ZIP");
-                                                                            CFI.setElement("Type", "Archive");
-                                                                            CFI.addElement("Details", "ZIP Archive");
+                                                                            CFI.SetElement("Confirm", ".ZIP");
+                                                                            CFI.SetElement("Type", "Archive");
+                                                                            CFI.AddElement("Details", "ZIP Archive");
                                                                             Identified=true; found = true;
                                                                         }
                                                                     }
@@ -1660,9 +1656,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x04)
                                 {
-                                    CFI.setElement("Confirm", ".ZIP");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "ZIP Archive");
+                                    CFI.SetElement("Confirm", ".ZIP");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "ZIP Archive");
                                     Identified=true; found=true;
                                 }
                             }
@@ -1682,9 +1678,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x89)
                                 {
-                                    CFI.setElement("Confirm", ".JAR");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "JAR Archive");
+                                    CFI.SetElement("Confirm", ".JAR");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "JAR Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1701,9 +1697,9 @@ namespace AbsolutionLib
                         if (Chunk[1] == 0xea)
                         {
 
-                            CFI.setElement("Confirm", ".ARJ");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "ARJ Archive");
+                            CFI.SetElement("Confirm", ".ARJ");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "ARJ Archive");
                             Identified=true; found = true;
                         }
                     }
@@ -1721,9 +1717,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x04)
                                 {
-                                    CFI.setElement("Confirm", ".ZIP");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Multivolume ZIP Archive");
+                                    CFI.SetElement("Confirm", ".ZIP");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Multivolume ZIP Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1743,9 +1739,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x20)
                                 {
-                                    CFI.setElement("Confirm", ".ZOO");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "ZOO Archive");
+                                    CFI.SetElement("Confirm", ".ZOO");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "ZOO Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1766,9 +1762,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x06)
                                 {
-                                    CFI.setElement("Confirm", ".ZIP");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Empty ZIP Archive");
+                                    CFI.SetElement("Confirm", ".ZIP");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Empty ZIP Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1788,9 +1784,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x01)
                                 {
-                                    CFI.setElement("Confirm", ".ARC");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "FreeARC Archive");
+                                    CFI.SetElement("Confirm", ".ARC");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "FreeARC Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1810,9 +1806,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x21)
                                 {
-                                    CFI.setElement("Confirm", ".RAR");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "RAR Archive");
+                                    CFI.SetElement("Confirm", ".RAR");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "RAR Archive");
                                     Identified=true; found=true;
                                 }
                             }
@@ -1832,9 +1828,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x43)
                                 {
-                                    CFI.setElement("Confirm", ".MAR");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Microsoft MSN MARC Archive");
+                                    CFI.SetElement("Confirm", ".MAR");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Microsoft MSN MARC Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -1850,9 +1846,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x8B)
                         {
-                            CFI.setElement("Confirm", ".GZ");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "Gnu ZIP Archive");
+                            CFI.SetElement("Confirm", ".GZ");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "Gnu ZIP Archive");
                             Identified=true; found=true;
                         }
                     }
@@ -1866,9 +1862,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x9D)
                         {
-                            CFI.setElement("Confirm", ".Z");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "Z Compress Archive");
+                            CFI.SetElement("Confirm", ".Z");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "Z Compress Archive");
                             Identified=true; found=true;
                         }
                     }
@@ -1882,9 +1878,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0xA0)
                         {
-                            CFI.setElement("Confirm", ".Z");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "Z Compress Archive");
+                            CFI.SetElement("Confirm", ".Z");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "Z Compress Archive");
                             Identified=true; found = true;
                         }
                     }
@@ -1901,9 +1897,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[1] == 0x68)
                             {
-                                CFI.setElement("Confirm", ".BZ2");
-                                CFI.setElement("Type", "Archive");
-                                CFI.addElement("Details", "BZ2 Archive");
+                                CFI.SetElement("Confirm", ".BZ2");
+                                CFI.SetElement("Type", "Archive");
+                                CFI.AddElement("Details", "BZ2 Archive");
                                 Identified=true; found = true;
                             }
                         }
@@ -1918,9 +1914,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x5A)
                         {
-                            CFI.setElement("Confirm", ".BZ");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "BZ Archive");
+                            CFI.SetElement("Confirm", ".BZ");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "BZ Archive");
                             Identified=true; found=true;
                         }
                     }
@@ -1942,9 +1938,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x1c)
                                         {
-                                            CFI.setElement("Confirm", ".7Z");
-                                            CFI.setElement("Type", "Archive");
-                                            CFI.addElement("Details", "7ZIP Archive");
+                                            CFI.SetElement("Confirm", ".7Z");
+                                            CFI.SetElement("Type", "Archive");
+                                            CFI.AddElement("Details", "7ZIP Archive");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -1969,9 +1965,9 @@ namespace AbsolutionLib
                                     if (Chunk[4] == 0x30)
                                     {
 
-                                        CFI.setElement("Confirm", ".CPIO");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.addElement("Details", "CPIO Archive");
+                                        CFI.SetElement("Confirm", ".CPIO");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.AddElement("Details", "CPIO Archive");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -1995,9 +1991,9 @@ namespace AbsolutionLib
                                     if (Chunk[4] == 0x00)
                                     {
 
-                                        CFI.setElement("Confirm", ".MAR");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.addElement("Details", "Mozilla Archive");
+                                        CFI.SetElement("Confirm", ".MAR");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.AddElement("Details", "Mozilla Archive");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2021,9 +2017,9 @@ namespace AbsolutionLib
                                     if (Chunk[4] == 0x00)
                                     {
 
-                                        CFI.setElement("Confirm", ".MAR");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.addElement("Details", "Mozilla Archive");
+                                        CFI.SetElement("Confirm", ".MAR");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.AddElement("Details", "Mozilla Archive");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2050,9 +2046,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x07)
                                             {
-                                                CFI.setElement("Confirm", ".ZISOFS");
-                                                CFI.setElement("Type", "Archive");
-                                                CFI.addElement("Details", "ZISOFS Archive");
+                                                CFI.SetElement("Confirm", ".ZISOFS");
+                                                CFI.SetElement("Type", "Archive");
+                                                CFI.AddElement("Details", "ZISOFS Archive");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -2077,9 +2073,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x72)
                                     {
-                                        CFI.setElement("Confirm", ".TAR");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.addElement("Details", "Tape Archive");
+                                        CFI.SetElement("Confirm", ".TAR");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.AddElement("Details", "Tape Archive");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -2100,9 +2096,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".CAB");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Microsoft CAB Archive");
+                                    CFI.SetElement("Confirm", ".CAB");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Microsoft CAB Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -2122,9 +2118,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".CAB");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Microsoft CAB Archive");
+                                    CFI.SetElement("Confirm", ".CAB");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Microsoft CAB Archive");
                                     Identified=true; found=true;
                                 }
                             }
@@ -2144,9 +2140,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x48)
                                 {
-                                    CFI.setElement("Confirm", ".PAK");
-                                    CFI.setElement("Type", "Archive");
-                                    CFI.addElement("Details", "Quake Archive");
+                                    CFI.SetElement("Confirm", ".PAK");
+                                    CFI.SetElement("Type", "Archive");
+                                    CFI.AddElement("Details", "Quake Archive");
                                     Identified=true; found = true;
                                 }
                             }
@@ -2165,9 +2161,9 @@ namespace AbsolutionLib
                             if (Chunk[4] == 0x68)
                             {
 
-                                CFI.setElement("Confirm", ".LZH");
-                                CFI.setElement("Type", "Archive");
-                                CFI.addElement("Details", "LHA or LZH Archive");
+                                CFI.SetElement("Confirm", ".LZH");
+                                CFI.SetElement("Type", "Archive");
+                                CFI.AddElement("Details", "LHA or LZH Archive");
                                 Identified=true; found = true;
                             }
                         }
@@ -2211,10 +2207,10 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[16] == 0x65)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".IPD");
-                                                                                    CFI.setElement("Type", "Archive");
+                                                                                    CFI.SetElement("Confirm", ".IPD");
+                                                                                    CFI.SetElement("Type", "Archive");
                                                                                     Identified=true; found = true;
-                                                                                    CFI.addElement("Details", "Blackberry Archive");
+                                                                                    CFI.AddElement("Details", "Blackberry Archive");
                                                                                 }
                                                                             }
                                                                         }
@@ -2280,9 +2276,9 @@ namespace AbsolutionLib
                                                                                                     if (Chunk[20] == 0x6f)  // We cut this short this is a lot of ascii text
                                                                                                     {
 
-                                                                                                        CFI.setElement("Confirm", ".HQX");
-                                                                                                        CFI.setElement("Type", "Archive");
-                                                                                                        CFI.addElement("Details", "Binhex Archive");
+                                                                                                        CFI.SetElement("Confirm", ".HQX");
+                                                                                                        CFI.SetElement("Type", "Archive");
+                                                                                                        CFI.AddElement("Details", "Binhex Archive");
                                                                                                         Identified=true; found = true;
                                                                                                     }
                                                                                                 }
@@ -2325,9 +2321,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x76)
                                             {
-                                                CFI.setElement("Confirm", ".CRU");
-                                                CFI.setElement("Type", "Archive");
-                                                CFI.addElement("Details", "CRUSH Archive");
+                                                CFI.SetElement("Confirm", ".CRU");
+                                                CFI.SetElement("Type", "Archive");
+                                                CFI.AddElement("Details", "CRUSH Archive");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -2354,9 +2350,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x00)
                                         {
-                                            CFI.setElement("Confirm", ".JAR");
-                                            CFI.setElement("Type", "Archive");
-                                            CFI.addElement("Details", "JAR Archive");
+                                            CFI.SetElement("Confirm", ".JAR");
+                                            CFI.SetElement("Type", "Archive");
+                                            CFI.AddElement("Details", "JAR Archive");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -2390,9 +2386,9 @@ namespace AbsolutionLib
                                                     {
                                                         if (Chunk[9] == 0x2d)
                                                         {
-                                                            CFI.setElement("Confirm", ".KGB");
-                                                            CFI.setElement("Type", "Archive");
-                                                            CFI.addElement("Details", "KGB Archive");
+                                                            CFI.SetElement("Confirm", ".KGB");
+                                                            CFI.SetElement("Type", "Archive");
+                                                            CFI.AddElement("Details", "KGB Archive");
                                                             Identified=true; found = true;
                                                         }
                                                     }
@@ -2427,9 +2423,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0xd1)
                                                 {
 
-                                                    CFI.setElement("Confirm", ".KWAJ");
-                                                    CFI.setElement("Type", "Archive");
-                                                    CFI.addElement("Details", "KWAJ Archive");
+                                                    CFI.SetElement("Confirm", ".KWAJ");
+                                                    CFI.SetElement("Type", "Archive");
+                                                    CFI.AddElement("Details", "KWAJ Archive");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -2462,9 +2458,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x33)
                                                 {
 
-                                                    CFI.setElement("Confirm", ".SZDD");
-                                                    CFI.setElement("Type", "Archive");
-                                                    CFI.addElement("Details", "SZDD Archive");
+                                                    CFI.SetElement("Confirm", ".SZDD");
+                                                    CFI.SetElement("Type", "Archive");
+                                                    CFI.AddElement("Details", "SZDD Archive");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -2490,9 +2486,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x00)
                                     {
-                                        CFI.setElement("Confirm", ".SIT");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.addElement("Details", "StuffIt Archive");
+                                        CFI.SetElement("Confirm", ".SIT");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.AddElement("Details", "StuffIt Archive");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2522,9 +2518,9 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x20)
                                                 {
 
-                                                    CFI.setElement("Confirm", ".SIT");
-                                                    CFI.setElement("Type", "Archive");
-                                                    CFI.addElement("Details", "StuffIt Archive");
+                                                    CFI.SetElement("Confirm", ".SIT");
+                                                    CFI.SetElement("Type", "Archive");
+                                                    CFI.AddElement("Details", "StuffIt Archive");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -2553,9 +2549,9 @@ namespace AbsolutionLib
                                         if (Chunk[5] == 0xc1)
                                         {
 
-                                            CFI.setElement("Confirm", ".UFA");
-                                            CFI.setElement("Type", "Archive");
-                                            CFI.addElement("Details", "UFA Archive");
+                                            CFI.SetElement("Confirm", ".UFA");
+                                            CFI.SetElement("Type", "Archive");
+                                            CFI.AddElement("Details", "UFA Archive");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -2582,10 +2578,10 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x50)
                                     {
-                                        CFI.setElement("Confirm", ".PGP");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.setElement("Encrypted", "true");
-                                        CFI.addElement("Details", "Pretty Good Privacy Encrypted Archive");
+                                        CFI.SetElement("Confirm", ".PGP");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.SetElement("Encrypted", "true");
+                                        CFI.AddElement("Details", "Pretty Good Privacy Encrypted Archive");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -2608,10 +2604,10 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0xff)
                                     {
-                                        CFI.setElement("Confirm", ".ENC");
-                                        CFI.setElement("Type", "Archive");
-                                        CFI.setElement("Encrypted", "true");
-                                        CFI.addElement("Details", "ENC Mujajideen Secrets 2 Encrypted File");
+                                        CFI.SetElement("Confirm", ".ENC");
+                                        CFI.SetElement("Type", "Archive");
+                                        CFI.SetElement("Encrypted", "true");
+                                        CFI.AddElement("Details", "ENC Mujajideen Secrets 2 Encrypted File");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -2631,10 +2627,10 @@ namespace AbsolutionLib
                             if (Chunk[2] == 0x53)
                             {
 
-                                CFI.setElement("Confirm", ".AES");
-                                CFI.setElement("Type", "Archive");
-                                CFI.setElement("Encrypted", "true");
-                                CFI.addElement("Details", "AES Encrypted Archive");
+                                CFI.SetElement("Confirm", ".AES");
+                                CFI.SetElement("Type", "Archive");
+                                CFI.SetElement("Encrypted", "true");
+                                CFI.AddElement("Details", "AES Encrypted Archive");
                                 Identified=true; found = true;
                             }
                         }
@@ -2651,10 +2647,10 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x58)
                             {
-                                CFI.setElement("Confirm", ".PAX");
-                                CFI.setElement("Type", "Picture");
-                                CFI.addElement("Details", "PAX Password Protected Bitmap");
-                                CFI.setElement("Encrypted", "true");
+                                CFI.SetElement("Confirm", ".PAX");
+                                CFI.SetElement("Type", "Picture");
+                                CFI.AddElement("Details", "PAX Password Protected Bitmap");
+                                CFI.SetElement("Encrypted", "true");
                                 Identified=true; found = true;
                             }
                         }
@@ -2682,10 +2678,10 @@ namespace AbsolutionLib
                                                 if (Chunk[7] == 0x4e)
                                                 {
 
-                                                    CFI.setElement("Confirm", ".PGD");
-                                                    CFI.setElement("Type", "DriveImage");
-                                                    CFI.addElement("Details", "Pretty Good Privacy Encrypted Disk Image");
-                                                    CFI.setElement("Encrypted", "true");
+                                                    CFI.SetElement("Confirm", ".PGD");
+                                                    CFI.SetElement("Type", "DriveImage");
+                                                    CFI.AddElement("Details", "Pretty Good Privacy Encrypted Disk Image");
+                                                    CFI.SetElement("Encrypted", "true");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -2711,9 +2707,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xE0)
                                 {
-                                    CFI.setElement("Confirm", ".JPG");
-                                    CFI.addElement("Details", "Joint Photographics Experts Group JPG Image");
-                                    CFI.setElement("Type", "Picture");
+                                    CFI.SetElement("Confirm", ".JPG");
+                                    CFI.AddElement("Details", "Joint Photographics Experts Group JPG Image");
+                                    CFI.SetElement("Type", "Picture");
                                     Identified=true; found=true;
                                 }
                             }
@@ -2732,9 +2728,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[3] == 0x6c)
                                     {
-                                        CFI.setElement("Confirm", ".JPG");
-                                        CFI.setElement("Type", "Picture");
-                                        CFI.addElement("Details", "IMG Bitmap");
+                                        CFI.SetElement("Confirm", ".JPG");
+                                        CFI.SetElement("Type", "Picture");
+                                        CFI.AddElement("Details", "IMG Bitmap");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2752,9 +2748,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x49)
                             {
-                                    CFI.setElement("Confirm", ".TIFF");
-                                    CFI.addElement("Details", "Tagged Image File Format");
-                                    CFI.setElement("Type", "Picture");
+                                    CFI.SetElement("Confirm", ".TIFF");
+                                    CFI.AddElement("Details", "Tagged Image File Format");
+                                    CFI.SetElement("Type", "Picture");
                                     Identified=true; found=true;
                             }
                         }
@@ -2773,9 +2769,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x0e)
                                 {
-                                    CFI.setElement("Confirm", ".ART");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "AOL Art File");
+                                    CFI.SetElement("Confirm", ".ART");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "AOL Art File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -2797,9 +2793,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x30)
                                     {
-                                        CFI.setElement("Confirm", ".NTF");
-                                        CFI.setElement("Type", "Picture");
-                                        CFI.addElement("Details", "National Imagery Transmission Format NITF File");
+                                        CFI.SetElement("Confirm", ".NTF");
+                                        CFI.SetElement("Type", "Picture");
+                                        CFI.AddElement("Details", "National Imagery Transmission Format NITF File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2820,9 +2816,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".TIFF");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Tagged Image File Format TIFF File");
+                                    CFI.SetElement("Confirm", ".TIFF");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Tagged Image File Format TIFF File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -2842,9 +2838,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x2a || Chunk[3] == 0x2b)
                                 {
-                                    CFI.setElement("Confirm", ".TIFF");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Tagged Image File Format TIFF File");
+                                    CFI.SetElement("Confirm", ".TIFF");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Tagged Image File Format TIFF File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -2864,9 +2860,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[3] == 0x4F)
                                     {
-                                        CFI.setElement("Confirm", ".SYW");
-                                        CFI.setElement("Type", "Picture");
-                                        CFI.addElement("Details", "Harvard Garphics Symbol Graphic File");
+                                        CFI.SetElement("Confirm", ".SYW");
+                                        CFI.SetElement("Type", "Picture");
+                                        CFI.AddElement("Details", "Harvard Garphics Symbol Graphic File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2887,9 +2883,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[3] == 0x31)
                                     {
-                                        CFI.setElement("Confirm", ".CLB");
-                                        CFI.setElement("Type", "Picture");
-                                        CFI.addElement("Details", "Corel Binary Metafile");
+                                        CFI.SetElement("Confirm", ".CLB");
+                                        CFI.SetElement("Type", "Picture");
+                                        CFI.AddElement("Details", "Corel Binary Metafile");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -2931,9 +2927,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[14] == 0x00)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".CRW");
-                                                                                    CFI.setElement("Type", "Picture");
-                                                                                    CFI.addElement("Details", "Canon Digital Camera File");
+                                                                                    CFI.SetElement("Confirm", ".CRW");
+                                                                                    CFI.SetElement("Type", "Picture");
+                                                                                    CFI.AddElement("Details", "Canon Digital Camera File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -2976,9 +2972,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[9] == 0x52)
                                                             {
-                                                                CFI.setElement("Confirm", ".CR2");
-                                                                CFI.setElement("Type", "Picture");
-                                                                CFI.addElement("Details", "Canon Digital Camera File");
+                                                                CFI.SetElement("Confirm", ".CR2");
+                                                                CFI.SetElement("Type", "Picture");
+                                                                CFI.AddElement("Details", "Canon Digital Camera File");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -3016,9 +3012,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[9] == 0x0A)
                                                             {
-                                                                CFI.setElement("Confirm", ".JP2");
-                                                                CFI.setElement("Type", "Picture");
-                                                                CFI.addElement("Details", "JP-2000 Image File");
+                                                                CFI.SetElement("Confirm", ".JP2");
+                                                                CFI.SetElement("Type", "Picture");
+                                                                CFI.AddElement("Details", "JP-2000 Image File");
                                                                 Identified=true; found=true;
                                                             }
                                                         }
@@ -3049,9 +3045,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x61)
                                         {
-                                            CFI.setElement("Confirm", ".GIF");
-                                            CFI.setElement("Type", "Picture");
-                                            CFI.addElement("Details", "Graphics Interchange Format File");
+                                            CFI.SetElement("Confirm", ".GIF");
+                                            CFI.SetElement("Type", "Picture");
+                                            CFI.AddElement("Details", "Graphics Interchange Format File");
                                             Identified=true; found=true;
                                         }
                                     }
@@ -3073,9 +3069,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x47)
                                 {
-                                    CFI.setElement("Confirm", ".PNG");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Portable Network Graphics File");
+                                    CFI.SetElement("Confirm", ".PNG");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Portable Network Graphics File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -3095,9 +3091,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x53)
                                 {
-                                    CFI.setElement("Confirm", ".PSD");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Adobe Photoshop Image File");
+                                    CFI.SetElement("Confirm", ".PSD");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Adobe Photoshop Image File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3121,9 +3117,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[18] == 0x45)
                                         {
-                                            CFI.setElement("Confirm", ".FITS");
-                                            CFI.setElement("Type", "Picture");
-                                            CFI.addElement("Details", "Flexible Image Transport System File");
+                                            CFI.SetElement("Confirm", ".FITS");
+                                            CFI.SetElement("Type", "Picture");
+                                            CFI.AddElement("Details", "Flexible Image Transport System File");
                                             Identified=true; found=true;
                                         }
                                     }
@@ -3145,9 +3141,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x4D)
                                 {
-                                    CFI.setElement("Confirm", ".GKS");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Graphics Kernel System File");
+                                    CFI.SetElement("Confirm", ".GKS");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Graphics Kernel System File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -3167,9 +3163,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x57)
                                 {
-                                    CFI.setElement("Confirm", ".PM");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "View Image File");
+                                    CFI.SetElement("Confirm", ".PM");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "View Image File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -3187,9 +3183,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0xAF)
                             {
-                                CFI.setElement("Confirm", ".FLI");
-                                CFI.setElement("Type", "Picture");
-                                CFI.addElement("Details", "FLI FLIC Image File");
+                                CFI.SetElement("Confirm", ".FLI");
+                                CFI.SetElement("Type", "Picture");
+                                CFI.AddElement("Details", "FLI FLIC Image File");
                                 Identified=true; found=true;
                             }
                         }
@@ -3218,9 +3214,9 @@ namespace AbsolutionLib
                                                 {
                                                     if (Chunk[8] == 0x01)
                                                     {
-                                                        CFI.setElement("Confirm", ".IMG");
-                                                        CFI.setElement("Type", "Picture");
-                                                        CFI.addElement("Details", "IMG Image File");
+                                                        CFI.SetElement("Confirm", ".IMG");
+                                                        CFI.SetElement("Type", "Picture");
+                                                        CFI.AddElement("Details", "IMG Image File");
                                                         Identified=true; found=true;
                                                     }
                                                 }
@@ -3259,9 +3255,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x0A)
                                                             {
-                                                                CFI.setElement("Confirm", ".HDR");
-                                                                CFI.setElement("Type", "Picture");
-                                                                CFI.addElement("Details", "Radiance High Tree Range Image File");
+                                                                CFI.SetElement("Confirm", ".HDR");
+                                                                CFI.SetElement("Type", "Picture");
+                                                                CFI.AddElement("Details", "Radiance High Tree Range Image File");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -3292,9 +3288,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x03)
                                         {
-                                            CFI.setElement("Confirm", ".RGB");
-                                            CFI.setElement("Type", "Picture");
-                                            CFI.addElement("Details", "Silicon Graphics RGB Bitmap File");
+                                            CFI.SetElement("Confirm", ".RGB");
+                                            CFI.SetElement("Type", "Picture");
+                                            CFI.AddElement("Details", "Silicon Graphics RGB Bitmap File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -3320,9 +3316,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x02)
                                         {
-                                            CFI.setElement("Confirm", ".DRW");
-                                            CFI.setElement("Type", "Picture");
-                                            CFI.addElement("Details", "DRW Micrografx Vector Graphics File");
+                                            CFI.SetElement("Confirm", ".DRW");
+                                            CFI.SetElement("Type", "Picture");
+                                            CFI.AddElement("Details", "DRW Micrografx Vector Graphics File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -3344,9 +3340,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x01)
                                 {
-                                    CFI.setElement("Confirm", ".PCX");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "PCX ZSoft Paintbrush File");
+                                    CFI.SetElement("Confirm", ".PCX");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "PCX ZSoft Paintbrush File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3366,9 +3362,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x54)
                                 {
-                                    CFI.setElement("Confirm", ".PAT");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "GNU Image Manipulation File");
+                                    CFI.SetElement("Confirm", ".PAT");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "GNU Image Manipulation File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3388,9 +3384,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".ICO");
-                                    CFI.setElement("Type", "Picture");
-                                    CFI.addElement("Details", "Icon Graphic");
+                                    CFI.SetElement("Confirm", ".ICO");
+                                    CFI.SetElement("Type", "Picture");
+                                    CFI.AddElement("Details", "Icon Graphic");
                                     Identified=true; found=true;
                                 }
                             }
@@ -3418,9 +3414,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x45)
                                                 {
-                                                    CFI.setElement("Confirm", ".CPT");
-                                                    CFI.setElement("Type", "Picture");
-                                                    CFI.addElement("Details", "Corel Photopaint File");
+                                                    CFI.SetElement("Confirm", ".CPT");
+                                                    CFI.SetElement("Type", "Picture");
+                                                    CFI.AddElement("Details", "Corel Photopaint File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -3450,9 +3446,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x45)
                                             {
-                                                CFI.setElement("Confirm", ".CPT");
-                                                CFI.setElement("Type", "Picture");
-                                                CFI.addElement("Details", "Corel Photopaint File");
+                                                CFI.SetElement("Confirm", ".CPT");
+                                                CFI.SetElement("Type", "Picture");
+                                                CFI.AddElement("Details", "Corel Photopaint File");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -3473,9 +3469,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x0a)
                             {
-                                CFI.setElement("Confirm", ".PGM");
-                                CFI.setElement("Type", "Picture");
-                                CFI.addElement("Details", "Portable Graymap Graphic");
+                                CFI.SetElement("Confirm", ".PGM");
+                                CFI.SetElement("Type", "Picture");
+                                CFI.AddElement("Details", "Portable Graymap Graphic");
                                 Identified =true; found = true;
                             }
                         }
@@ -3498,9 +3494,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x08)
                                         {
-                                            CFI.setElement("Confirm", ".IMG");
-                                            CFI.setElement("Type", "Picture");
-                                            CFI.addElement("Details", "ChromaGraph Graphics Card Bitmap Graphics File");
+                                            CFI.SetElement("Confirm", ".IMG");
+                                            CFI.SetElement("Type", "Picture");
+                                            CFI.AddElement("Details", "ChromaGraph Graphics Card Bitmap Graphics File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -3530,9 +3526,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x57)
                                                 {
-                                                    CFI.setElement("Confirm", ".SDR");
-                                                    CFI.setElement("Type", "Picture");
-                                                    CFI.addElement("Details", "Smartdraw Drawing File");
+                                                    CFI.SetElement("Confirm", ".SDR");
+                                                    CFI.SetElement("Type", "Picture");
+                                                    CFI.AddElement("Details", "Smartdraw Drawing File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -3571,9 +3567,9 @@ namespace AbsolutionLib
                                                             if (Chunk[10] == 0x00)
                                                             {
 
-                                                                CFI.setElement("Confirm", ".CSH");
-                                                                CFI.setElement("Type", "Picture");
-                                                                CFI.addElement("Details", "Adobe Photoshop Custom Shape");
+                                                                CFI.SetElement("Confirm", ".CSH");
+                                                                CFI.SetElement("Type", "Picture");
+                                                                CFI.AddElement("Details", "Adobe Photoshop Custom Shape");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -3604,9 +3600,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x32)
                                     {
-                                        CFI.setElement("Confirm", ".WAV");
-                                        CFI.setElement("Type", "Audio");
-                                        CFI.addElement("Details", "Wave Audio File");
+                                        CFI.SetElement("Confirm", ".WAV");
+                                        CFI.SetElement("Type", "Audio");
+                                        CFI.AddElement("Details", "Wave Audio File");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -3627,9 +3623,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x2e)
                                 {
-                                    CFI.setElement("Confirm", ".AU");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "Audacity Audio File");
+                                    CFI.SetElement("Confirm", ".AU");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "Audacity Audio File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3652,9 +3648,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x52)
                                     {
-                                        CFI.setElement("Confirm", ".AMR");
-                                        CFI.setElement("Type", "Audio");
-                                        CFI.addElement("Details", "Adaptive Multi-Rate ACELP Audio File");
+                                        CFI.SetElement("Confirm", ".AMR");
+                                        CFI.SetElement("Type", "Audio");
+                                        CFI.AddElement("Details", "Adaptive Multi-Rate ACELP Audio File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -3675,9 +3671,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x03)
                                 {
-                                    CFI.setElement("Confirm", ".MP3");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "MP3 Audio File");
+                                    CFI.SetElement("Confirm", ".MP3");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "MP3 Audio File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -3713,9 +3709,9 @@ namespace AbsolutionLib
                                                             {
                                                                 if (Chunk[11] == 0x20)
                                                                 {
-                                                                    CFI.setElement("Confirm", ".M4A");
-                                                                    CFI.setElement("Type", "Audio");
-                                                                    CFI.addElement("Details", "Music 4 All Audio File");
+                                                                    CFI.SetElement("Confirm", ".M4A");
+                                                                    CFI.SetElement("Type", "Audio");
+                                                                    CFI.AddElement("Details", "Music 4 All Audio File");
                                                                     Identified=true; found=true;
                                                                 }
                                                             }
@@ -3744,9 +3740,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x73)
                                 {
 
-                                    CFI.setElement("Confirm", ".DSS");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "Digital Speech Standard Audio File");
+                                    CFI.SetElement("Confirm", ".DSS");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "Digital Speech Standard Audio File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3784,9 +3780,9 @@ namespace AbsolutionLib
                                                                 {
                                                                     if (Chunk[12] == 0x00)
                                                                     {
-                                                                        CFI.setElement("Confirm", ".RA");
-                                                                        CFI.setElement("Type", "Audio");
-                                                                        CFI.addElement("Details", "Real RealPlayer Audio File");
+                                                                        CFI.SetElement("Confirm", ".RA");
+                                                                        CFI.SetElement("Type", "Audio");
+                                                                        CFI.AddElement("Details", "Real RealPlayer Audio File");
                                                                         Identified=true; found = true;
                                                                     }
                                                                 }
@@ -3817,9 +3813,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x00)
                                     {
-                                        CFI.setElement("Confirm", ".RA");
-                                        CFI.setElement("Type", "Audio");
-                                        CFI.addElement("Details", "Real RealAudio Streaming Media File");
+                                        CFI.SetElement("Confirm", ".RA");
+                                        CFI.SetElement("Type", "Audio");
+                                        CFI.AddElement("Details", "Real RealAudio Streaming Media File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -3841,9 +3837,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x64)
                                 {
 
-                                    CFI.setElement("Confirm", ".AU");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "AU Audio File");
+                                    CFI.SetElement("Confirm", ".AU");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "AU Audio File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3862,9 +3858,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x64)
                                 {
 
-                                    CFI.setElement("Confirm", ".AU");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "AU Audio File");
+                                    CFI.SetElement("Confirm", ".AU");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "AU Audio File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3886,9 +3882,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x00)
                                     {
-                                        CFI.setElement("Confirm", ".AIFF");
-                                        CFI.setElement("Type", "Audio");
-                                        CFI.addElement("Details", "Audio Interchange File");
+                                        CFI.SetElement("Confirm", ".AIFF");
+                                        CFI.SetElement("Type", "Audio");
+                                        CFI.AddElement("Details", "Audio Interchange File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -3915,9 +3911,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x00)
                                             {
-                                                CFI.setElement("Confirm", ".KOZ");
-                                                CFI.setElement("Type", "Audio");
-                                                CFI.addElement("Details", "Sprint Music Store Audio File");
+                                                CFI.SetElement("Confirm", ".KOZ");
+                                                CFI.SetElement("Type", "Audio");
+                                                CFI.AddElement("Details", "Sprint Music Store Audio File");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -3941,9 +3937,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x64)
                                 {
 
-                                    CFI.setElement("Confirm", ".MIDI");
-                                    CFI.setElement("Type", "Audio");
-                                    CFI.addElement("Details", "MIDI Audio File");
+                                    CFI.SetElement("Confirm", ".MIDI");
+                                    CFI.SetElement("Type", "Audio");
+                                    CFI.AddElement("Details", "MIDI Audio File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -3968,9 +3964,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x01)
                                         {
-                                            CFI.setElement("Confirm", ".NSF");
-                                            CFI.setElement("Type", "Audio");
-                                            CFI.addElement("Details", "Nintendo Entertainment System Audio File");
+                                            CFI.SetElement("Confirm", ".NSF");
+                                            CFI.SetElement("Type", "Audio");
+                                            CFI.AddElement("Details", "Nintendo Entertainment System Audio File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -3997,9 +3993,9 @@ namespace AbsolutionLib
                                         if (Chunk[5] == 0x00)
                                         {
 
-                                            CFI.setElement("Confirm", ".MMF");
-                                            CFI.setElement("Type", "Audio");
-                                            CFI.addElement("Details", "Yamaha Synthetic Mobile Application Format Audio File");
+                                            CFI.SetElement("Confirm", ".MMF");
+                                            CFI.SetElement("Type", "Audio");
+                                            CFI.AddElement("Details", "Yamaha Synthetic Mobile Application Format Audio File");
                                             Identified=true; found = true;
 
                                         }
@@ -4030,9 +4026,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x45)
                                                 {
-                                                    CFI.setElement("Confirm", ".DVF");
-                                                    CFI.setElement("Type", "Audio");
-                                                    CFI.addElement("Details", "Sony Compressed Voice File");
+                                                    CFI.SetElement("Confirm", ".DVF");
+                                                    CFI.SetElement("Type", "Audio");
+                                                    CFI.AddElement("Details", "Sony Compressed Voice File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -4064,9 +4060,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x22)
                                                 {
-                                                    CFI.setElement("Confirm", ".FLAC");
-                                                    CFI.setElement("Type", "Audio");
-                                                    CFI.addElement("Details", "Free Lossless Audio Codec");
+                                                    CFI.SetElement("Confirm", ".FLAC");
+                                                    CFI.SetElement("Type", "Audio");
+                                                    CFI.AddElement("Details", "Free Lossless Audio Codec");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -4096,9 +4092,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[18] == 0x42)
                                         {
-                                            CFI.setElement("Confirm", ".MDB");
-                                            CFI.setElement("Type", "Database");
-                                            CFI.addElement("Details", "Microsoft Access Database File");
+                                            CFI.SetElement("Confirm", ".MDB");
+                                            CFI.SetElement("Type", "Database");
+                                            CFI.AddElement("Details", "Microsoft Access Database File");
                                             Identified=true; found=true;
                                         }
                                     }
@@ -4124,9 +4120,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x65)
                                         {
-                                            CFI.setElement("Confirm", ".SQLite");
-                                            CFI.setElement("Type", "Database");
-                                            CFI.addElement("Details", "SQLite Database File");
+                                            CFI.SetElement("Confirm", ".SQLite");
+                                            CFI.SetElement("Type", "Database");
+                                            CFI.AddElement("Details", "SQLite Database File");
                                             Identified=true; found=true;
                                         }
                                     }
@@ -4152,9 +4148,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x00)
                                         {
-                                            CFI.setElement("Confirm", ".NSF");
-                                            CFI.setElement("Type", "Database");
-                                            CFI.addElement("Details", "IBM Lotus Notes Database File");
+                                            CFI.SetElement("Confirm", ".NSF");
+                                            CFI.SetElement("Type", "Database");
+                                            CFI.AddElement("Details", "IBM Lotus Notes Database File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -4206,9 +4202,9 @@ namespace AbsolutionLib
                                                                                         {
                                                                                             if (Chunk[18] == 0x42)
                                                                                             {
-                                                                                                    CFI.setElement("Confirm", ".ACCDB");
-                                                                                                    CFI.setElement("Type", "Database");
-                                                                                                    CFI.addElement("Details", "Ace Database File");
+                                                                                                    CFI.SetElement("Confirm", ".ACCDB");
+                                                                                                    CFI.SetElement("Type", "Database");
+                                                                                                    CFI.AddElement("Details", "Ace Database File");
                                                                                                     Identified=true; found=true;
                                                                                             }
                                                                                         }
@@ -4273,9 +4269,9 @@ namespace AbsolutionLib
                                                                                         {
                                                                                             if (Chunk[18] == 0x42)
                                                                                             {
-                                                                                                CFI.setElement("Confirm", ".MDB");
-                                                                                                CFI.setElement("Type", "Database");
-                                                                                                CFI.addElement("Details", "Microsoft Jet Database File");
+                                                                                                CFI.SetElement("Confirm", ".MDB");
+                                                                                                CFI.SetElement("Type", "Database");
+                                                                                                CFI.AddElement("Details", "Microsoft Jet Database File");
                                                                                                 Identified=true; found=true;
                                                                                             }
                                                                                         }
@@ -4332,9 +4328,9 @@ namespace AbsolutionLib
                                                                         {
                                                                             if (Chunk[14] == 0x65)
                                                                             {
-                                                                                CFI.setElement("Confirm", ".DBF");
-                                                                                CFI.setElement("Type", "Database");
-                                                                                CFI.addElement("Details", "Psion Series 3 Database File");
+                                                                                CFI.SetElement("Confirm", ".DBF");
+                                                                                CFI.SetElement("Type", "Database");
+                                                                                CFI.AddElement("Details", "Psion Series 3 Database File");
                                                                                 Identified=true; found = true;
                                                                             }
                                                                         }
@@ -4365,9 +4361,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x30)
                                 {
-                                    CFI.setElement("Confirm", "Interbase");
-                                    CFI.setElement("Type", "Database");
-                                    CFI.addElement("Details", "Firebird or Interbase Database File");
+                                    CFI.SetElement("Confirm", "Interbase");
+                                    CFI.SetElement("Type", "Database");
+                                    CFI.AddElement("Details", "Firebird or Interbase Database File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4387,9 +4383,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x89)
                                 {
-                                    CFI.setElement("Confirm", "Active Directory Database");
-                                    CFI.setElement("Type", "Database");
-                                    CFI.addElement("Details", "Microsoft Active Directory Database");
+                                    CFI.SetElement("Confirm", "Active Directory Database");
+                                    CFI.SetElement("Type", "Database");
+                                    CFI.AddElement("Details", "Microsoft Active Directory Database");
                                     Identified = true; found = true;
                                 }
                             }
@@ -4410,9 +4406,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".MDF");
-                                    CFI.setElement("Type", "Database");
-                                    CFI.addElement("Details", "Microsoft SQL Server 2000 Database File");
+                                    CFI.SetElement("Confirm", ".MDF");
+                                    CFI.SetElement("Type", "Database");
+                                    CFI.AddElement("Details", "Microsoft SQL Server 2000 Database File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4441,9 +4437,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x52)
                                                 {
-                                                    CFI.setElement("Confirm", ".ADX");
-                                                    CFI.setElement("Type", "Database");
-                                                    CFI.addElement("Details", "APX Approach Database File");
+                                                    CFI.SetElement("Confirm", ".ADX");
+                                                    CFI.SetElement("Type", "Database");
+                                                    CFI.AddElement("Details", "APX Approach Database File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -4505,9 +4501,9 @@ namespace AbsolutionLib
                                                                                                         {
                                                                                                             if (Chunk[22] == 0x65)
                                                                                                             {
-                                                                                                                CFI.setElement("Confirm", ".DAT");
-                                                                                                                CFI.setElement("Type", "Database");
-                                                                                                                CFI.addElement("Details", "AVG6 Integrity Database File");
+                                                                                                                CFI.SetElement("Confirm", ".DAT");
+                                                                                                                CFI.SetElement("Type", "Database");
+                                                                                                                CFI.AddElement("Details", "AVG6 Integrity Database File");
                                                                                                                 Identified=true; found = true;
                                                                                                             }
                                                                                                         }
@@ -4564,9 +4560,9 @@ namespace AbsolutionLib
                                                                 {
                                                                     if (Chunk[12] == 0x00)
                                                                     {
-                                                                        CFI.setElement("Confirm", ".CTF");
-                                                                        CFI.setElement("Type", "Database");
-                                                                        CFI.addElement("Details", "WhereIsIt Catalog File");
+                                                                        CFI.SetElement("Confirm", ".CTF");
+                                                                        CFI.SetElement("Type", "Database");
+                                                                        CFI.AddElement("Details", "WhereIsIt Catalog File");
                                                                         Identified=true; found = true;
                                                                     }
                                                                 }
@@ -4597,9 +4593,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x00)
                                     {
-                                        CFI.setElement("Confirm", ".FDB");
-                                        CFI.setElement("Type", "Database");
-                                        CFI.addElement("Details", "Fiasco Database Definition File");
+                                        CFI.SetElement("Confirm", ".FDB");
+                                        CFI.SetElement("Type", "Database");
+                                        CFI.AddElement("Details", "Fiasco Database Definition File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -4644,9 +4640,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x00)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".CNV");
-                                                                                    CFI.setElement("Type", "Database");
-                                                                                    CFI.addElement("Details", "DB2 Conversion Database File");
+                                                                                    CFI.SetElement("Confirm", ".CNV");
+                                                                                    CFI.SetElement("Type", "Database");
+                                                                                    CFI.AddElement("Details", "DB2 Conversion Database File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -4683,9 +4679,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x21)
                                     {
-                                        CFI.setElement("Confirm", ".MPG");
-                                        CFI.setElement("Type", "Video");
-                                        CFI.addElement("Details", "MPEG Video File");
+                                        CFI.SetElement("Confirm", ".MPG");
+                                        CFI.SetElement("Type", "Video");
+                                        CFI.AddElement("Details", "MPEG Video File");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -4706,9 +4702,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x76)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4728,9 +4724,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x65)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4750,9 +4746,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x74)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4772,9 +4768,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x65)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4794,9 +4790,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x74)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4816,9 +4812,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[7] == 0x70)
                                 {
-                                    CFI.setElement("Confirm", ".MOV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Quicktime Movie File");
+                                    CFI.SetElement("Confirm", ".MOV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Quicktime Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4838,9 +4834,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x01)
                                 {
-                                    CFI.setElement("Confirm", ".FLV");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Flash Movie File");
+                                    CFI.SetElement("Confirm", ".FLV");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Flash Movie File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -4874,9 +4870,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x70)
                                                             {
-                                                                CFI.setElement("Confirm", ".MPG4V1");
-                                                                CFI.setElement("Type", "Video");
-                                                                CFI.addElement("Details", "MPG4 v1 Movie File");
+                                                                CFI.SetElement("Confirm", ".MPG4V1");
+                                                                CFI.SetElement("Type", "Video");
+                                                                CFI.AddElement("Details", "MPG4 v1 Movie File");
                                                                 Identified=true; found=true;
                                                             }
                                                         }
@@ -4917,9 +4913,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x00)
                                                             {
-                                                                CFI.setElement("Confirm", ".OGG");
-                                                                CFI.setElement("Type", "Video");
-                                                                CFI.addElement("Details", "Ogg Vorbis Movie File");
+                                                                CFI.SetElement("Confirm", ".OGG");
+                                                                CFI.SetElement("Type", "Video");
+                                                                CFI.AddElement("Details", "Ogg Vorbis Movie File");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -4960,9 +4956,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x70)
                                                             {
-                                                                CFI.setElement("Confirm", ".MPG");
-                                                                CFI.setElement("Type", "Video");
-                                                                CFI.addElement("Details", "MPG-4 Movie File");
+                                                                CFI.SetElement("Confirm", ".MPG");
+                                                                CFI.SetElement("Type", "Video");
+                                                                CFI.AddElement("Details", "MPG-4 Movie File");
                                                                 Identified=true; found=true;
                                                             }
                                                         }
@@ -5005,9 +5001,9 @@ namespace AbsolutionLib
                                                             {
                                                                 if (Chunk[11] == 0x32)
                                                                 {
-                                                                    CFI.setElement("Confirm", ".M4V");
-                                                                    CFI.setElement("Type", "Video");
-                                                                    CFI.addElement("Details", "M4V Movie File");
+                                                                    CFI.SetElement("Confirm", ".M4V");
+                                                                    CFI.SetElement("Type", "Video");
+                                                                    CFI.AddElement("Details", "M4V Movie File");
                                                                     Identified=true; found=true;
                                                                 }
                                                             }
@@ -5075,9 +5071,9 @@ namespace AbsolutionLib
                                                                                                             {
                                                                                                                 if (Chunk[23] == 0x32)
                                                                                                                 {
-                                                                                                                    CFI.setElement("Confirm", ".MP4");
-                                                                                                                    CFI.setElement("Type", "Video");
-                                                                                                                    CFI.addElement("Details", "MP4 Movie File");
+                                                                                                                    CFI.SetElement("Confirm", ".MP4");
+                                                                                                                    CFI.SetElement("Type", "Video");
+                                                                                                                    CFI.AddElement("Details", "MP4 Movie File");
                                                                                                                     Identified=true; found=true;
                                                                                                                 }
                                                                                                             }
@@ -5133,9 +5129,9 @@ namespace AbsolutionLib
                                                             {
                                                                 if (Chunk[11] == 0x20)
                                                                 {
-                                                                    CFI.setElement("Confirm", ".MOV");
-                                                                    CFI.setElement("Type", "Video");
-                                                                    CFI.addElement("Details", "Quicktime Movie File");
+                                                                    CFI.SetElement("Confirm", ".MOV");
+                                                                    CFI.SetElement("Type", "Video");
+                                                                    CFI.AddElement("Details", "Quicktime Movie File");
                                                                     Identified=true; found=true;
                                                                 }
                                                             }
@@ -5164,9 +5160,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x54)
                                 {
 
-                                    CFI.setElement("Confirm", ".REC");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Real RealVideo Recording Movie File");
+                                    CFI.SetElement("Confirm", ".REC");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Real RealVideo Recording Movie File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -5185,9 +5181,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x46)
                                 {
 
-                                    CFI.setElement("Confirm", ".RMVB");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Real RealMedia Video File");
+                                    CFI.SetElement("Confirm", ".RMVB");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Real RealMedia Video File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -5207,9 +5203,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x00)
                                     {
-                                        CFI.setElement("Confirm", ".RAY");
-                                        CFI.setElement("Type", "Video");
-                                        CFI.addElement("Details", "Real RealMedia Video File");
+                                        CFI.SetElement("Confirm", ".RAY");
+                                        CFI.SetElement("Type", "Video");
+                                        CFI.AddElement("Details", "Real RealMedia Video File");
                                         Identified=true; found=true;
                                     }
                                 }
@@ -5245,10 +5241,10 @@ namespace AbsolutionLib
                                                             if (Chunk[10] == 0x70)
                                                             {
 
-                                                                CFI.setElement("Confirm", ".3GPP");
-                                                                CFI.setElement("Type", "Video");
+                                                                CFI.SetElement("Confirm", ".3GPP");
+                                                                CFI.SetElement("Type", "Video");
                                                                 Identified=true; found=true;
-                                                                CFI.addElement("Details", "3GPP Video File");
+                                                                CFI.AddElement("Details", "3GPP Video File");
                                                             }
                                                         }
                                                     }
@@ -5289,9 +5285,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x70)
                                                             {
-                                                                CFI.setElement("Confirm", ".3GPP2");
-                                                                CFI.setElement("Type", "Video");
-                                                                CFI.addElement("Details", "3GPP2 Video File");
+                                                                CFI.SetElement("Confirm", ".3GPP2");
+                                                                CFI.SetElement("Type", "Video");
+                                                                CFI.AddElement("Details", "3GPP2 Video File");
                                                                 Identified=true; found=true;
                                                             }
                                                         }
@@ -5342,9 +5338,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x61)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".MKV");
-                                                                                    CFI.setElement("Type", "Video");
-                                                                                    CFI.addElement("Details", "Matroska Video File");
+                                                                                    CFI.SetElement("Confirm", ".MKV");
+                                                                                    CFI.SetElement("Type", "Video");
+                                                                                    CFI.AddElement("Details", "Matroska Video File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -5400,9 +5396,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x6c)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".ASF");
-                                                                                    CFI.setElement("Type", "Video");
-                                                                                    CFI.addElement("Details", "Microsoft Windows Audio/Video File");
+                                                                                    CFI.SetElement("Confirm", ".ASF");
+                                                                                    CFI.SetElement("Type", "Video");
+                                                                                    CFI.AddElement("Details", "Microsoft Windows Audio/Video File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -5435,9 +5431,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x43)
                                 {
-                                        CFI.setElement("Confirm", ".IVR");
-                                        CFI.setElement("Type", "Video");
-                                        CFI.addElement("Details", "Real RealMedia Video File");
+                                        CFI.SetElement("Confirm", ".IVR");
+                                        CFI.SetElement("Type", "Video");
+                                        CFI.AddElement("Details", "Real RealMedia Video File");
                                         Identified=true; found = true;
                                 }
                             }
@@ -5457,9 +5453,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".RMVB");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "Real RealMedia Video File");
+                                    CFI.SetElement("Confirm", ".RMVB");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "Real RealMedia Video File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -5477,9 +5473,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x44)
                             {
-                                CFI.setElement("Confirm", ".DVR");
-                                CFI.setElement("Type", "Video");
-                                CFI.addElement("Details", "DVR-Studio Video File");
+                                CFI.SetElement("Confirm", ".DVR");
+                                CFI.SetElement("Type", "Video");
+                                CFI.AddElement("Details", "DVR-Studio Video File");
                                 Identified=true; found = true;
                             }
                         }
@@ -5522,9 +5518,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x74)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".G64");
-                                                                                    CFI.setElement("Type", "Video");
-                                                                                    CFI.addElement("Details", "Genetec Video File");
+                                                                                    CFI.SetElement("Confirm", ".G64");
+                                                                                    CFI.SetElement("Type", "Video");
+                                                                                    CFI.AddElement("Details", "Genetec Video File");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -5554,9 +5550,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x38)
                         {
-                            CFI.setElement("Confirm", ".TORRENT");
-                            CFI.setElement("Type", "Torrent");
-                            CFI.addElement("Details", "Bit Torrent File");
+                            CFI.SetElement("Confirm", ".TORRENT");
+                            CFI.SetElement("Type", "Torrent");
+                            CFI.AddElement("Details", "Bit Torrent File");
                             Identified=true; found=true;
                         }
                     }
@@ -5625,9 +5621,9 @@ namespace AbsolutionLib
                                                                                                                                 if (Chunk[27] == 0x75)
                                                                                                                                 {
 
-                                                                                                                                    CFI.setElement("Confirm", ".SLN");
-                                                                                                                                    CFI.setElement("Type", "Programming");
-                                                                                                                                    CFI.addElement("Details", "Microsoft Visual Studio Project File");
+                                                                                                                                    CFI.SetElement("Confirm", ".SLN");
+                                                                                                                                    CFI.SetElement("Type", "Programming");
+                                                                                                                                    CFI.AddElement("Details", "Microsoft Visual Studio Project File");
                                                                                                                                     Identified=true; found = true;
                                                                                                                                     symboliclinks++;
                                                                                                                                 }
@@ -5686,9 +5682,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x20)
                                                             {
-                                                                CFI.setElement("Confirm", ".FM");
-                                                                CFI.setElement("Type", "Programming");
-                                                                CFI.addElement("Details", "Adobe Framemaker File");
+                                                                CFI.SetElement("Confirm", ".FM");
+                                                                CFI.SetElement("Type", "Programming");
+                                                                CFI.AddElement("Details", "Adobe Framemaker File");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -5719,9 +5715,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x30)
                                         {
-                                            CFI.setElement("Confirm", ".PCH");
-                                            CFI.setElement("Type", "Programming");
-                                            CFI.addElement("Details", "Microsoft Visual C Precompiled Header");
+                                            CFI.SetElement("Confirm", ".PCH");
+                                            CFI.SetElement("Type", "Programming");
+                                            CFI.AddElement("Details", "Microsoft Visual C Precompiled Header");
                                             Identified=true; found = true;
                                             symboliclinks++;
                                         }
@@ -5746,9 +5742,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x43)
                                     {
-                                        CFI.setElement("Confirm", ".PCH");
-                                        CFI.setElement("Type", "Programming");
-                                        CFI.addElement("Details", "Microsoft Visual Studio Workbench Information File");
+                                        CFI.SetElement("Confirm", ".PCH");
+                                        CFI.SetElement("Type", "Programming");
+                                        CFI.AddElement("Details", "Microsoft Visual Studio Workbench Information File");
                                         Identified=true; found = true;
                                         symboliclinks++;
                                     }
@@ -5776,9 +5772,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x65)
                                             {
-                                                CFI.setElement("Confirm", ".DSW");
-                                                CFI.setElement("Type", "Programming");
-                                                CFI.addElement("Details", "Microsoft Visual Studio Workspace File");
+                                                CFI.SetElement("Confirm", ".DSW");
+                                                CFI.SetElement("Type", "Programming");
+                                                CFI.AddElement("Details", "Microsoft Visual Studio Workspace File");
                                                 Identified=true; found = true;
                                                 symboliclinks++;
                                             }
@@ -5812,9 +5808,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x64)
                                                 {
-                                                    CFI.setElement("Confirm", ".DTD");
-                                                    CFI.setElement("Type", "Engineering");
-                                                    CFI.addElement("Details", "DTD DesignTools 2D Design File");
+                                                    CFI.SetElement("Confirm", ".DTD");
+                                                    CFI.SetElement("Type", "Engineering");
+                                                    CFI.AddElement("Details", "DTD DesignTools 2D Design File");
                                                     Identified=true; found = true;
                                                     symboliclinks++;
                                                 }
@@ -5888,9 +5884,9 @@ namespace AbsolutionLib
                                                                                                                                 if (Chunk[27] == 0x6f)
                                                                                                                                 {
 
-                                                                                                                                    CFI.setElement("Confirm", ".DSP");
-                                                                                                                                    CFI.setElement("Type", "Engineering");
-                                                                                                                                    CFI.addElement("Details", "Microsoft Visual Studio Project File");
+                                                                                                                                    CFI.SetElement("Confirm", ".DSP");
+                                                                                                                                    CFI.SetElement("Type", "Engineering");
+                                                                                                                                    CFI.AddElement("Details", "Microsoft Visual Studio Project File");
                                                                                                                                     Identified=true; found = true;
                                                                                                                                     symboliclinks++;
                                                                                                                                 }
@@ -5932,9 +5928,9 @@ namespace AbsolutionLib
                         if (Chunk[1] == 0x20)
                         {
 
-                            CFI.setElement("Confirm", ".MSI");
-                            CFI.setElement("Type", "Engineering");
-                            CFI.addElement("Details", "MSI Cerius 2 File");
+                            CFI.SetElement("Confirm", ".MSI");
+                            CFI.SetElement("Type", "Engineering");
+                            CFI.AddElement("Details", "MSI Cerius 2 File");
                             Identified=true; found = true;
                             symboliclinks++;
 
@@ -5990,9 +5986,9 @@ namespace AbsolutionLib
                                                                                                     {
                                                                                                         if (Chunk[21] == 0x45)
                                                                                                         {
-                                                                                                            CFI.setElement("Confirm", ".SAV");
-                                                                                                            CFI.setElement("Type", "Engineering");
-                                                                                                            CFI.addElement("Details", "SPSS Data File");
+                                                                                                            CFI.SetElement("Confirm", ".SAV");
+                                                                                                            CFI.SetElement("Type", "Engineering");
+                                                                                                            CFI.AddElement("Details", "SPSS Data File");
                                                                                                             Identified=true; found = true;
                                                                                                             symboliclinks++;
                                                                                                         }
@@ -6039,9 +6035,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x4e)
                                                 {
-                                                    CFI.setElement("Confirm", ".SLE");
-                                                    CFI.setElement("Type", "Engineering");
-                                                    CFI.addElement("Details", "Surfplan Kite Project File");
+                                                    CFI.SetElement("Confirm", ".SLE");
+                                                    CFI.SetElement("Type", "Engineering");
+                                                    CFI.AddElement("Details", "Surfplan Kite Project File");
                                                     Identified=true; found = true;
                                                     symboliclinks++;
                                                 }
@@ -6066,9 +6062,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xa1)
                                 {
-                                    CFI.setElement("Confirm", ".TCPDUMP");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "Libpcap TCPDump File");
+                                    CFI.SetElement("Confirm", ".TCPDUMP");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "Libpcap TCPDump File");
                                     Identified=true; found = true;
                                     symboliclinks++;
 
@@ -6090,9 +6086,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x30)
                                 {
-                                    CFI.setElement("Confirm", ".DWG");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "AutoDesk AutoCAD Drawing");
+                                    CFI.SetElement("Confirm", ".DWG");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "AutoDesk AutoCAD Drawing");
                                     Identified=true; found = true;
                                     symboliclinks++;
 
@@ -6144,9 +6140,9 @@ namespace AbsolutionLib
                                                                                         {
                                                                                             if (Chunk[18] == 0x4e)  // 46 49 4C 45
                                                                                             {
-                                                                                                CFI.setElement("Confirm", ".CPI");
-                                                                                                CFI.setElement("Type", "Engineering");
-                                                                                                CFI.addElement("Details", "Sietronics CPI XRD Document");
+                                                                                                CFI.SetElement("Confirm", ".CPI");
+                                                                                                CFI.SetElement("Type", "Engineering");
+                                                                                                CFI.AddElement("Details", "Sietronics CPI XRD Document");
                                                                                                 Identified=true; found = true;
                                                                                                 symboliclinks++;
                                                                                             }
@@ -6186,9 +6182,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0)
                                 {
-                                    CFI.setElement("Confirm", ".LNK");
-                                    CFI.setElement("Type", "Link");
-                                    CFI.addElement("Details", "Windows Link");
+                                    CFI.SetElement("Confirm", ".LNK");
+                                    CFI.SetElement("Type", "Link");
+                                    CFI.AddElement("Details", "Windows Link");
                                     Identified=true; found=true;
                                     symboliclinks++;
                                 }
@@ -6209,9 +6205,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".JNT");
-                                    CFI.setElement("Type", "Database");
-                                    CFI.addElement("Details", "Windows Journal File");
+                                    CFI.SetElement("Confirm", ".JNT");
+                                    CFI.SetElement("Type", "Database");
+                                    CFI.AddElement("Details", "Windows Journal File");
                                     Identified=true; found = true;
                                     symboliclinks++;
                                 }
@@ -6232,9 +6228,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x53)
                                 {
-                                    CFI.setElement("Confirm", ".JNT");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "Windows NT Netmon Capture File");
+                                    CFI.SetElement("Confirm", ".JNT");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "Windows NT Netmon Capture File");
                                     Identified=true; found = true;
                                     symboliclinks++;
                                 }
@@ -6255,9 +6251,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x43)
                                 {
-                                    CFI.setElement("Confirm", ".GRP");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "Windows Program Manager Group File");
+                                    CFI.SetElement("Confirm", ".GRP");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "Windows Program Manager Group File");
                                     Identified=true; found = true;
                                     symboliclinks++;
                                 }
@@ -6278,9 +6274,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x2b)
                                 {
-                                    CFI.setElement("Confirm", ".CLB");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "Windows COM+ Catalog");
+                                    CFI.SetElement("Confirm", ".CLB");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "Windows COM+ Catalog");
                                     Identified=true; found = true;
                                 }
                             }
@@ -6300,9 +6296,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x47)
                                 {
-                                    CFI.setElement("Confirm", "HIVE");
-                                    CFI.setElement("Type", "REGISTRYHIVE");
-                                    CFI.addElement("Details", "Windows 9x Registry Hive File");
+                                    CFI.SetElement("Confirm", "HIVE");
+                                    CFI.SetElement("Type", "REGISTRYHIVE");
+                                    CFI.AddElement("Details", "Windows 9x Registry Hive File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -6322,9 +6318,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".SKF");
-                                    CFI.setElement("Type", "Engineering");
-                                    CFI.addElement("Details", "SkinCrafter Skin File");
+                                    CFI.SetElement("Confirm", ".SKF");
+                                    CFI.SetElement("Type", "Engineering");
+                                    CFI.AddElement("Details", "SkinCrafter Skin File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -6344,9 +6340,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x66)
                                 {
-                                    CFI.setElement("Confirm", "HIVE");
-                                    CFI.setElement("Type", "REGISTRYHIVE");
-                                    CFI.addElement("Details", "Microsoft Windows Registry Hive");
+                                    CFI.SetElement("Confirm", "HIVE");
+                                    CFI.SetElement("Type", "REGISTRYHIVE");
+                                    CFI.AddElement("Details", "Microsoft Windows Registry Hive");
                                     Identified=true; found=true;
                                 }
                             }
@@ -6366,9 +6362,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[6] == 0x33)
                                 {
-                                    CFI.setElement("Confirm", "REGTRANS-MS");
-                                    CFI.setElement("Type", "REGTRANS-MS");
-                                    CFI.addElement("Details", "Microsoft Windows REGTRANS-MS");
+                                    CFI.SetElement("Confirm", "REGTRANS-MS");
+                                    CFI.SetElement("Type", "REGTRANS-MS");
+                                    CFI.AddElement("Details", "Microsoft Windows REGTRANS-MS");
                                     Identified=true; found=true;
                                 }
                             }
@@ -6392,9 +6388,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x03)
                                         {
-                                            CFI.setElement("Confirm", ".WMF");
-                                            CFI.setElement("Type", "Metadata");
-                                            CFI.addElement("Details", "Microsoft Windows Metafile");
+                                            CFI.SetElement("Confirm", ".WMF");
+                                            CFI.SetElement("Type", "Metadata");
+                                            CFI.AddElement("Details", "Microsoft Windows Metafile");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -6422,9 +6418,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x54)
                                             {
-                                                CFI.setElement("Confirm", ".REG");
-                                                CFI.setElement("Type", "Database");
-                                                CFI.addElement("Details", "Microsoft Windows NT Registry or Registry Undo File");
+                                                CFI.SetElement("Confirm", ".REG");
+                                                CFI.SetElement("Type", "Database");
+                                                CFI.AddElement("Details", "Microsoft Windows NT Registry or Registry Undo File");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -6451,9 +6447,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0xa7)
                                         {
-                                            CFI.setElement("Confirm", ".DMP");
-                                            CFI.setElement("Type", "DumpFile");
-                                            CFI.addElement("Details", "Microsoft Windows Crash Dump File");
+                                            CFI.SetElement("Confirm", ".DMP");
+                                            CFI.SetElement("Type", "DumpFile");
+                                            CFI.AddElement("Details", "Microsoft Windows Crash Dump File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -6483,9 +6479,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x34)
                                                 {
-                                                    CFI.setElement("Confirm", "DMP");
-                                                    CFI.setElement("Type", "DumpFile");
-                                                    CFI.addElement("Details", "Microsoft Windows x64 Crash Dump File");
+                                                    CFI.SetElement("Confirm", "DMP");
+                                                    CFI.SetElement("Type", "DumpFile");
+                                                    CFI.AddElement("Details", "Microsoft Windows x64 Crash Dump File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6517,9 +6513,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x50)
                                                 {
-                                                    CFI.setElement("Confirm", "DMP");
-                                                    CFI.setElement("Type", "DumpFile");
-                                                    CFI.addElement("Details", "Microsoft Windows x86 Crash Dump File");
+                                                    CFI.SetElement("Confirm", "DMP");
+                                                    CFI.SetElement("Type", "DumpFile");
+                                                    CFI.AddElement("Details", "Microsoft Windows x86 Crash Dump File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6551,9 +6547,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x41)
                                                 {
-                                                    CFI.setElement("Confirm", "PF");
-                                                    CFI.setElement("Type", "Prefetch");
-                                                    CFI.addElement("Details", "Microsoft Windows Prefetch Data");
+                                                    CFI.SetElement("Confirm", "PF");
+                                                    CFI.SetElement("Type", "Prefetch");
+                                                    CFI.AddElement("Details", "Microsoft Windows Prefetch Data");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6586,9 +6582,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[15] == 0x00)
                                                 {
-                                                    CFI.setElement("Confirm", "INFO2");
-                                                    CFI.setElement("Type", "RecycleBin");
-                                                    CFI.addElement("Details", "INFO2 Recycle Bin");
+                                                    CFI.SetElement("Confirm", "INFO2");
+                                                    CFI.SetElement("Type", "RecycleBin");
+                                                    CFI.AddElement("Details", "INFO2 Recycle Bin");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6620,9 +6616,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x65)
                                                 {
-                                                    CFI.setElement("Confirm", ".EVT");
-                                                    CFI.setElement("Type", "Log");
-                                                    CFI.addElement("Details", "Microsoft Windows Event File");
+                                                    CFI.SetElement("Confirm", ".EVT");
+                                                    CFI.SetElement("Type", "Log");
+                                                    CFI.AddElement("Details", "Microsoft Windows Event File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6654,9 +6650,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x00)
                                                 {
-                                                    CFI.setElement("Confirm", ".EVTX");
-                                                    CFI.setElement("Type", "Log");
-                                                    CFI.addElement("Details", "Microsoft Windows Event File");
+                                                    CFI.SetElement("Confirm", ".EVTX");
+                                                    CFI.SetElement("Type", "Log");
+                                                    CFI.AddElement("Details", "Microsoft Windows Event File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6682,9 +6678,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x4E)
                                 {
-                                    CFI.setElement("Confirm", ".PST");
-                                    CFI.setElement("Type", "Mailbox");
-                                    CFI.addElement("Details", "Microsoft Windows Personal Folder");
+                                    CFI.SetElement("Confirm", ".PST");
+                                    CFI.SetElement("Type", "Mailbox");
+                                    CFI.AddElement("Details", "Microsoft Windows Personal Folder");
                                     Identified=true; found=true;
                                 }
                             }
@@ -6704,9 +6700,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xFE)
                                 {
-                                    CFI.setElement("Confirm", ".DBX");
-                                    CFI.setElement("Type", "Mailbox");
-                                    CFI.addElement("Details", "Microsoft Outlook Express DBX File");
+                                    CFI.SetElement("Confirm", ".DBX");
+                                    CFI.SetElement("Type", "Mailbox");
+                                    CFI.AddElement("Details", "Microsoft Outlook Express DBX File");
                                     Identified = true; found = true;
                                 }
                             }
@@ -6734,9 +6730,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x00)
                                                 {
-                                                    CFI.setElement("Confirm", ".SNM");
-                                                    CFI.setElement("Type", "Mailbox");
-                                                    CFI.addElement("Details", "Netscape Communicator v4 Mail Folder");
+                                                    CFI.SetElement("Confirm", ".SNM");
+                                                    CFI.SetElement("Type", "Mailbox");
+                                                    CFI.AddElement("Details", "Netscape Communicator v4 Mail Folder");
                                                     Identified=true; found=true;
                                                 }
                                             }
@@ -6760,9 +6756,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xE0)
                                 {
-                                    CFI.setElement("Confirm", ".MSG");
-                                    CFI.setElement("Type", "Mailbox");
-                                    CFI.addElement("Details", "Microsoft Email Message");
+                                    CFI.SetElement("Confirm", ".MSG");
+                                    CFI.SetElement("Type", "Mailbox");
+                                    CFI.AddElement("Details", "Microsoft Email Message");
                                     Identified=true; found=true;
                                 }
                             }
@@ -6790,9 +6786,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x30)
                                                 {
-                                                    CFI.setElement("Confirm", ".PFC");
-                                                    CFI.setElement("Type", "Mailbox");
-                                                    CFI.addElement("Details", "AOL Personal File Cabinet");
+                                                    CFI.SetElement("Confirm", ".PFC");
+                                                    CFI.SetElement("Type", "Mailbox");
+                                                    CFI.AddElement("Details", "AOL Personal File Cabinet");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -6820,9 +6816,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x20 || Chunk[5] == 0x3f)
                                         {
-                                            CFI.setElement("Confirm", ".EML");
-                                            CFI.setElement("Type", "Mailbox");
-                                            CFI.addElement("Details", "Email File");
+                                            CFI.SetElement("Confirm", ".EML");
+                                            CFI.SetElement("Type", "Mailbox");
+                                            CFI.AddElement("Details", "Email File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -6862,9 +6858,9 @@ namespace AbsolutionLib
                                                                 {
                                                                     if (Chunk[12] == 0x20)
                                                                     {
-                                                                        CFI.setElement("Confirm", ".EML");
-                                                                        CFI.setElement("Type", "Mailbox");
-                                                                        CFI.addElement("Details", "Sendmail RFC822 Mailbox");
+                                                                        CFI.SetElement("Confirm", ".EML");
+                                                                        CFI.SetElement("Type", "Mailbox");
+                                                                        CFI.AddElement("Details", "Sendmail RFC822 Mailbox");
                                                                         Identified=true; found = true;
                                                                     }
                                                                 }
@@ -6889,9 +6885,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x2d)
                         {
-                            CFI.setElement("Confirm", ".EML");
-                            CFI.setElement("Type", "Mailbox");
-                            CFI.addElement("Details", "Microsoft Exchange Email Box");
+                            CFI.SetElement("Confirm", ".EML");
+                            CFI.SetElement("Type", "Mailbox");
+                            CFI.AddElement("Details", "Microsoft Exchange Email Box");
                             Identified=true; found = true;
                         }
                     }
@@ -6944,9 +6940,9 @@ namespace AbsolutionLib
                                                                                             if (Chunk[18] == 0x46)
                                                                                             {
                                                                                                 {
-                                                                                                    CFI.setElement("Confirm", "IE8Cookie");
-                                                                                                    CFI.setElement("Type", "Internet Explorer 8 Cookie Database");
-                                                                                                    CFI.addElement("Details", "Microsoft Internet Explorer 8 Cookie Database");
+                                                                                                    CFI.SetElement("Confirm", "IE8Cookie");
+                                                                                                    CFI.SetElement("Type", "Internet Explorer 8 Cookie Database");
+                                                                                                    CFI.AddElement("Details", "Microsoft Internet Explorer 8 Cookie Database");
                                                                                                     Identified=true; found = true;
                                                                                                 }
                                                                                             }
@@ -7022,9 +7018,9 @@ namespace AbsolutionLib
                                                                                                             {
                                                                                                                 if (Chunk[23] == 0x20)
                                                                                                                 {
-                                                                                                                    CFI.setElement("Confirm", ".DAT");
-                                                                                                                    CFI.setElement("Type", "Database");
-                                                                                                                    CFI.addElement("Details", "Microsoft Internet Explorer History File");
+                                                                                                                    CFI.SetElement("Confirm", ".DAT");
+                                                                                                                    CFI.SetElement("Type", "Database");
+                                                                                                                    CFI.AddElement("Details", "Microsoft Internet Explorer History File");
                                                                                                                     Identified=true; found = true;
                                                                                                                 }
                                                                                                             }
@@ -7067,9 +7063,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x41)
                                 {
-                                    CFI.setElement("Confirm", ".ABA");
-                                    CFI.setElement("Type", "Contacts");
-                                    CFI.addElement("Details", "ABA Palm Address Book File");
+                                    CFI.SetElement("Confirm", ".ABA");
+                                    CFI.SetElement("Type", "Contacts");
+                                    CFI.AddElement("Details", "ABA Palm Address Book File");
                                     Identified=true; found=true;
                                 }
                             }
@@ -7089,9 +7085,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x6c)
                                 {
-                                    CFI.setElement("Confirm", ".DBB");
-                                    CFI.setElement("Type", "Contacts");
-                                    CFI.addElement("Details", "Skype User Data File");
+                                    CFI.SetElement("Confirm", ".DBB");
+                                    CFI.SetElement("Type", "Contacts");
+                                    CFI.AddElement("Details", "Skype User Data File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7125,9 +7121,9 @@ namespace AbsolutionLib
                                                         {
                                                             if (Chunk[10] == 0x67)
                                                             {
-                                                                CFI.setElement("Confirm", ".BAG");
-                                                                CFI.setElement("Type", "Contacts");
-                                                                CFI.addElement("Details", "AOL Feed Bag / Buddy List");
+                                                                CFI.SetElement("Confirm", ".BAG");
+                                                                CFI.SetElement("Type", "Contacts");
+                                                                CFI.AddElement("Details", "AOL Feed Bag / Buddy List");
                                                                 Identified=true; found = true;
                                                             }
                                                         }
@@ -7156,9 +7152,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x42)
                                     {
-                                        CFI.setElement("Confirm", ".ABY");
-                                        CFI.setElement("Type", "Contacts");
-                                        CFI.addElement("Details", "AOL Address Book and User Configuration");
+                                        CFI.SetElement("Confirm", ".ABY");
+                                        CFI.SetElement("Type", "Contacts");
+                                        CFI.AddElement("Details", "AOL Address Book and User Configuration");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -7187,9 +7183,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x58)
                                                 {
-                                                    CFI.setElement("Confirm", ".ABI");
-                                                    CFI.setElement("Type", "Contacts");
-                                                    CFI.addElement("Details", "AOL Address Book Index File");
+                                                    CFI.SetElement("Confirm", ".ABI");
+                                                    CFI.SetElement("Type", "Contacts");
+                                                    CFI.AddElement("Details", "AOL Address Book Index File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -7231,9 +7227,9 @@ namespace AbsolutionLib
                                                                 {
                                                                     if (Chunk[12] == 0x0a)
                                                                     {
-                                                                        CFI.setElement("Confirm", ".VCF");
-                                                                        CFI.setElement("Type", "Contacts");
-                                                                        CFI.addElement("Details", "vCard Contact Information");
+                                                                        CFI.SetElement("Confirm", ".VCF");
+                                                                        CFI.SetElement("Type", "Contacts");
+                                                                        CFI.AddElement("Details", "vCard Contact Information");
                                                                         Identified=true; found = true;
                                                                     }
                                                                 }
@@ -7265,9 +7261,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x41)
                                 {
-                                    CFI.setElement("Confirm", ".DBA");
-                                    CFI.setElement("Type", "Calendar");
-                                    CFI.addElement("Details", "DBA Palm Datebook");
+                                    CFI.SetElement("Confirm", ".DBA");
+                                    CFI.SetElement("Type", "Calendar");
+                                    CFI.AddElement("Details", "DBA Palm Datebook");
                                     Identified=true; found=true;
                                 }
                             }
@@ -7290,9 +7286,9 @@ namespace AbsolutionLib
                                     if (Chunk[4] == 0x53)
                                     {
 
-                                        CFI.setElement("Confirm", ".MLS");
-                                        CFI.setElement("Type", "Project");
-                                        CFI.addElement("Details", "Milestone v1 Project Management File");
+                                        CFI.SetElement("Confirm", ".MLS");
+                                        CFI.SetElement("Type", "Project");
+                                        CFI.AddElement("Details", "Milestone v1 Project Management File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -7316,9 +7312,9 @@ namespace AbsolutionLib
                                     if (Chunk[4] == 0x34)
                                     {
 
-                                        CFI.setElement("Confirm", ".MLS");
-                                        CFI.setElement("Type", "Project");
-                                        CFI.addElement("Details", "Milestone v2.1b Project Management File");
+                                        CFI.SetElement("Confirm", ".MLS");
+                                        CFI.SetElement("Type", "Project");
+                                        CFI.AddElement("Details", "Milestone v2.1b Project Management File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -7339,9 +7335,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x43)
                                 {
-                                        CFI.setElement("Confirm", ".MLS");
-                                        CFI.setElement("Type", "Project");
-                                        CFI.addElement("Details", "Milestone v2.1c Project Management File");
+                                        CFI.SetElement("Confirm", ".MLS");
+                                        CFI.SetElement("Type", "Project");
+                                        CFI.AddElement("Details", "Milestone v2.1c Project Management File");
                                         Identified=true; found = true;                  
                                 }
                             }
@@ -7363,8 +7359,8 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0xFF)
                                 {
-                                    CFI.setElement("Format", "Unicode-32");
-                                    CFI.addElement("Details", "Unicode-32 Text File");
+                                    CFI.SetElement("Format", "Unicode-32");
+                                    CFI.AddElement("Details", "Unicode-32 Text File");
                                     TextHTML = true;
                                     Executable = false;
                                     Identified=true; found=true;
@@ -7387,8 +7383,8 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x58)
                                 {
-                                    CFI.setElement("Format", "Unicode");
-                                    CFI.addElement("Details", "Unicode-16 Text File");
+                                    CFI.SetElement("Format", "Unicode");
+                                    CFI.AddElement("Details", "Unicode-16 Text File");
                                     TextHTML = true;
                                     Executable = false;
                                     Identified=true; found = true;
@@ -7437,9 +7433,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x01)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".MDF");
-                                                                                    CFI.setElement("Type", "CDImage");
-                                                                                    CFI.addElement("Details", "MDF Alcohol 120% Disk Image");
+                                                                                    CFI.SetElement("Confirm", ".MDF");
+                                                                                    CFI.SetElement("Type", "CDImage");
+                                                                                    CFI.AddElement("Details", "MDF Alcohol 120% Disk Image");
                                                                                     Identified=true; found=true;
                                                                                 }
                                                                             }
@@ -7479,9 +7475,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x4F)
                                                 {
-                                                    CFI.setElement("Confirm", ".NRI");
-                                                    CFI.setElement("Type", "CDImage");
-                                                    CFI.addElement("Details", "NERO CD Complication File");
+                                                    CFI.SetElement("Confirm", ".NRI");
+                                                    CFI.SetElement("Type", "CDImage");
+                                                    CFI.AddElement("Details", "NERO CD Complication File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -7551,9 +7547,9 @@ namespace AbsolutionLib
                                                                                                                         {
                                                                                                                             if (Chunk[26] == 0x1A)
                                                                                                                             {
-                                                                                                                                CFI.setElement("Confirm", ".DAT");
-                                                                                                                                CFI.setElement("Type", "CDImage");
-                                                                                                                                CFI.addElement("Details", "DAT Runtime Software Disk Image");
+                                                                                                                                CFI.SetElement("Confirm", ".DAT");
+                                                                                                                                CFI.SetElement("Type", "CDImage");
+                                                                                                                                CFI.AddElement("Details", "DAT Runtime Software Disk Image");
                                                                                                                                 Identified=true; found = true;
                                                                                                                             }
                                                                                                                         }
@@ -7598,9 +7594,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x31)
                                     {
-                                        CFI.setElement("Confirm", ".ISO");
-                                        CFI.setElement("Type", "CDImage");
-                                        CFI.addElement("Details", "ISO-9660 Disk Image");
+                                        CFI.SetElement("Confirm", ".ISO");
+                                        CFI.SetElement("Type", "CDImage");
+                                        CFI.AddElement("Details", "ISO-9660 Disk Image");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -7622,9 +7618,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x4f)
                                 {
 
-                                    CFI.setElement("Confirm", ".CSO");
-                                    CFI.setElement("Type", "CDImage");
-                                    CFI.addElement("Details", "CSO Compressed ISO Disk Image");
+                                    CFI.SetElement("Confirm", ".CSO");
+                                    CFI.SetElement("Type", "CDImage");
+                                    CFI.AddElement("Details", "CSO Compressed ISO Disk Image");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7645,9 +7641,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x00)
                                 {
 
-                                    CFI.setElement("Confirm", ".DAX");
-                                    CFI.setElement("Type", "CDImage");
-                                    CFI.addElement("Details", "DAX Compressed CD Disk Image");
+                                    CFI.SetElement("Confirm", ".DAX");
+                                    CFI.SetElement("Type", "CDImage");
+                                    CFI.AddElement("Details", "DAX Compressed CD Disk Image");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7691,9 +7687,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[15] == 0x58)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".VCD");
-                                                                                    CFI.setElement("Type", "CDImage");
-                                                                                    CFI.addElement("Details", "Video VCD Image");
+                                                                                    CFI.SetElement("Confirm", ".VCD");
+                                                                                    CFI.SetElement("Type", "CDImage");
+                                                                                    CFI.AddElement("Details", "Video VCD Image");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -7726,9 +7722,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0xFB)
                                 {
 
-                                    CFI.setElement("Confirm", ".IMG");
-                                    CFI.setElement("Type", "CDImage");
-                                    CFI.addElement("Details", "QEMU Qcow Disk Image");
+                                    CFI.SetElement("Confirm", ".IMG");
+                                    CFI.SetElement("Type", "CDImage");
+                                    CFI.AddElement("Details", "QEMU Qcow Disk Image");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7774,9 +7770,9 @@ namespace AbsolutionLib
                                                                             {
                                                                                 if (Chunk[16] == 0x6f)
                                                                                 {
-                                                                                    CFI.setElement("Confirm", ".VMDK");
-                                                                                    CFI.setElement("Type", "DriveImage");
-                                                                                    CFI.addElement("Details", "VMWare VMDK Virtual Machine Disk Image");
+                                                                                    CFI.SetElement("Confirm", ".VMDK");
+                                                                                    CFI.SetElement("Type", "DriveImage");
+                                                                                    CFI.AddElement("Details", "VMWare VMDK Virtual Machine Disk Image");
                                                                                     Identified=true; found = true;
                                                                                 }
                                                                             }
@@ -7806,9 +7802,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x76)
                             {
-                                    CFI.setElement("Confirm", ".SLE");
-                                    CFI.setElement("Type", "DriveImage");
-                                    CFI.addElement("Details", "Steganos Security Suite Virtual Secure Drive");
+                                    CFI.SetElement("Confirm", ".SLE");
+                                    CFI.SetElement("Type", "DriveImage");
+                                    CFI.AddElement("Details", "Steganos Security Suite Virtual Secure Drive");
                                     Identified=true; found = true;
                             }
                         }
@@ -7828,9 +7824,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x44)
                                 {
 
-                                    CFI.setElement("Confirm", ".VMDK");
-                                    CFI.setElement("Type", "DriveImage");
-                                    CFI.addElement("Details", "VMWare VMDK 3 Virtual Disk File");
+                                    CFI.SetElement("Confirm", ".VMDK");
+                                    CFI.SetElement("Type", "DriveImage");
+                                    CFI.AddElement("Details", "VMWare VMDK 3 Virtual Disk File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7851,9 +7847,9 @@ namespace AbsolutionLib
                                 if (Chunk[3] == 0x56)
                                 {
 
-                                    CFI.setElement("Confirm", ".VMDK");
-                                    CFI.setElement("Type", "DriveImage");
-                                    CFI.addElement("Details", "VMWare VMDK 4 Virtual Disk File");
+                                    CFI.SetElement("Confirm", ".VMDK");
+                                    CFI.SetElement("Type", "DriveImage");
+                                    CFI.AddElement("Details", "VMWare VMDK 4 Virtual Disk File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -7871,9 +7867,9 @@ namespace AbsolutionLib
                         {
                             if (Chunk[2] == 0x4d)
                             {
-                                CFI.setElement("Confirm", ".VMDK");
-                                CFI.setElement("Type", "DriveImage");
-                                CFI.addElement("Details", "VMWare VMDK 4 Virtual Disk File");
+                                CFI.SetElement("Confirm", ".VMDK");
+                                CFI.SetElement("Type", "DriveImage");
+                                CFI.AddElement("Details", "VMWare VMDK 4 Virtual Disk File");
                                 Identified=true; found = true;
                             }
                         }
@@ -7900,9 +7896,9 @@ namespace AbsolutionLib
                                             {
                                                 if (Chunk[7] == 0x78)
                                                 {
-                                                    CFI.setElement("Confirm", ".VHD");
-                                                    CFI.setElement("Type", "DriveImage");
-                                                    CFI.addElement("Details", "Microsoft Virtual PC Disk Image File");
+                                                    CFI.SetElement("Confirm", ".VHD");
+                                                    CFI.SetElement("Type", "DriveImage");
+                                                    CFI.AddElement("Details", "Microsoft Virtual PC Disk Image File");
                                                     Identified=true; found = true;
                                                 }
                                             }
@@ -7930,9 +7926,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x66)
                                     {
-                                        CFI.setElement("Confirm", ".GDB");
-                                        CFI.setElement("Type", "Geolocation");
-                                        CFI.addElement("Details", "VMapSource GPS Waypoint Database");
+                                        CFI.SetElement("Confirm", ".GDB");
+                                        CFI.SetElement("Type", "Geolocation");
+                                        CFI.AddElement("Details", "VMapSource GPS Waypoint Database");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -7965,9 +7961,9 @@ namespace AbsolutionLib
                                                     {
                                                         if (Chunk[9] == 0x43)
                                                         {
-                                                            CFI.setElement("Confirm", ".DAT");
-                                                            CFI.setElement("Type", "Geolocation");
-                                                            CFI.addElement("Details", "TomTom Traffic Data File");
+                                                            CFI.SetElement("Confirm", ".DAT");
+                                                            CFI.SetElement("Type", "Geolocation");
+                                                            CFI.AddElement("Details", "TomTom Traffic Data File");
                                                             Identified=true; found = true;
                                                         }
                                                     }
@@ -8001,9 +7997,9 @@ namespace AbsolutionLib
                                         {
                                             if (Chunk[6] == 0x5d)
                                             {
-                                                CFI.setElement("Confirm", ".DUN");
-                                                CFI.setElement("Type", "Configuration");
-                                                CFI.addElement("Details", "Dial-Up Networking Configuration File");
+                                                CFI.SetElement("Confirm", ".DUN");
+                                                CFI.SetElement("Type", "Configuration");
+                                                CFI.AddElement("Details", "Dial-Up Networking Configuration File");
                                                 Identified=true; found = true;
                                             }
                                         }
@@ -8030,9 +8026,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x58)
                                         {
-                                            CFI.setElement("Confirm", ".IND");
-                                            CFI.setElement("Type", "Configuration");
-                                            CFI.addElement("Details", "AOL Index Preferences File");
+                                            CFI.SetElement("Confirm", ".IND");
+                                            CFI.SetElement("Type", "Configuration");
+                                            CFI.AddElement("Details", "AOL Index Preferences File");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -8058,9 +8054,9 @@ namespace AbsolutionLib
                                     {
                                         if (Chunk[5] == 0x74)
                                         {
-                                            CFI.setElement("Confirm", ".PLIST");
-                                            CFI.setElement("Type", "Executable");
-                                            CFI.addElement("Details", "Microsoft Binary Property Lists");
+                                            CFI.SetElement("Confirm", ".PLIST");
+                                            CFI.SetElement("Type", "Executable");
+                                            CFI.AddElement("Details", "Microsoft Binary Property Lists");
                                             Identified=true; found = true;
                                         }
                                     }
@@ -8078,9 +8074,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0xBF)
                         {
-                            CFI.setElement("Confirm", ".SOL");
-                            CFI.setElement("Type", "COOKIE");
-                            CFI.addElement("Details", "Adobe Flash Cookie File");
+                            CFI.SetElement("Confirm", ".SOL");
+                            CFI.SetElement("Type", "COOKIE");
+                            CFI.AddElement("Details", "Adobe Flash Cookie File");
                             Identified=true; found=true;
                         }
                     }
@@ -8098,9 +8094,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".EMF");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows Extended Metafile Format Printer Spool File");
+                                    CFI.SetElement("Confirm", ".EMF");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows Extended Metafile Format Printer Spool File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8120,9 +8116,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".SHD");
-                                    CFI.setElement("Type", "Document");
-                                    CFI.addElement("Details", "Microsoft Windows NT Printer Spool File");
+                                    CFI.SetElement("Confirm", ".SHD");
+                                    CFI.SetElement("Type", "Document");
+                                    CFI.AddElement("Details", "Microsoft Windows NT Printer Spool File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8142,9 +8138,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x00)
                                 {
-                                    CFI.setElement("Confirm", ".P10");
-                                    CFI.setElement("Type", "Configuration");
-                                    CFI.addElement("Details", "Intel PROset Wireless Profile");
+                                    CFI.SetElement("Confirm", ".P10");
+                                    CFI.SetElement("Type", "Configuration");
+                                    CFI.AddElement("Details", "Intel PROset Wireless Profile");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8165,9 +8161,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x46)
                                 {
-                                    CFI.setElement("Confirm", ".RIFF");
-                                    CFI.setElement("Type", "Video");
-                                    CFI.addElement("Details", "RIFF File Format");
+                                    CFI.SetElement("Confirm", ".RIFF");
+                                    CFI.SetElement("Type", "Video");
+                                    CFI.AddElement("Details", "RIFF File Format");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8187,9 +8183,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x4e)
                                 {
-                                    CFI.setElement("Confirm", ".NVRAM");
-                                    CFI.setElement("Type", "Configuration");
-                                    CFI.addElement("Details", "VMWare BIOS State File");
+                                    CFI.SetElement("Confirm", ".NVRAM");
+                                    CFI.SetElement("Type", "Configuration");
+                                    CFI.AddElement("Details", "VMWare BIOS State File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8209,9 +8205,9 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[3] == 0x44)
                                 {
-                                    CFI.setElement("Confirm", ".ACSD");
-                                    CFI.setElement("Type", "Configuration");
-                                    CFI.addElement("Details", "AOL Parameter and Information File");
+                                    CFI.SetElement("Confirm", ".ACSD");
+                                    CFI.SetElement("Type", "Configuration");
+                                    CFI.AddElement("Details", "AOL Parameter and Information File");
                                     Identified=true; found = true;
                                 }
                             }
@@ -8233,9 +8229,9 @@ namespace AbsolutionLib
                                 {
                                     if (Chunk[4] == 0x01)
                                     {
-                                        CFI.setElement("Confirm", ".PIC");
-                                        CFI.setElement("Type", "Picture");
-                                        CFI.addElement("Details", "PIC Image File");
+                                        CFI.SetElement("Confirm", ".PIC");
+                                        CFI.SetElement("Type", "Picture");
+                                        CFI.AddElement("Details", "PIC Image File");
                                         Identified=true; found = true;
                                     }
                                 }
@@ -8252,9 +8248,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x02 || Chunk[1] == 0x03 || Chunk[1] == 0x04 || Chunk[1] == 0x08 || Chunk[1] == 0x09)
                         {
-                            CFI.setElement("Confirm", ".ARC");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "ARC Archive File");
+                            CFI.SetElement("Confirm", ".ARC");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "ARC Archive File");
                             Identified=true; found = true;
                         }
                     }
@@ -8268,9 +8264,9 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x0B)
                         {
-                            CFI.setElement("Confirm", ".PAK");
-                            CFI.setElement("Type", "Archive");
-                            CFI.addElement("Details", "PAK Archive File");
+                            CFI.SetElement("Confirm", ".PAK");
+                            CFI.SetElement("Type", "Archive");
+                            CFI.AddElement("Details", "PAK Archive File");
                             Identified=true; found = true;
                         }
                     }
@@ -8284,38 +8280,38 @@ namespace AbsolutionLib
                     {
                         if (Chunk[1] == 0x50)
                         {
-                            CFI.setElement("Confirm", ".MDI");
-                            CFI.setElement("Type", "Document");
-                            CFI.addElement("Details", "Microsoft Document Imaging File");
+                            CFI.SetElement("Confirm", ".MDI");
+                            CFI.SetElement("Type", "Document");
+                            CFI.AddElement("Details", "Microsoft Document Imaging File");
                             Identified=true; found = true;
                         }
                     }
                 }
 
-                CFI.setElement("Empty", "false");
+                CFI.SetElement("Empty", "false");
 
                 if (Executable)
                 {
-                    CFI.setElement("Executable", "true");
+                    CFI.SetElement("Executable", "true");
                 }
                 else
                 {
-                    CFI.setElement("Executable", "false");
+                    CFI.SetElement("Executable", "false");
                 }
 
                 if (asciicheck)
                 {
                     if (!found)
                     {
-                        CFI.setElement("Confirm", "Text");
-                        CFI.setElement("Type", "Document");
-                        CFI.setElement("Text", "true");
-                        CFI.addElement("Details", "ASCII/ANSI Text File");
+                        CFI.SetElement("Confirm", "Text");
+                        CFI.SetElement("Type", "Document");
+                        CFI.SetElement("Text", "true");
+                        CFI.AddElement("Details", "ASCII/ANSI Text File");
                         Identified=true;
                     }
                     else
                     {
-                        CFI.setElement("Text", "true");
+                        CFI.SetElement("Text", "true");
                     }
                 }
                 else
@@ -8326,12 +8322,12 @@ namespace AbsolutionLib
                         {
                             if (Chunk[1] == 0xFE)
                             {
-                                CFI.setElement("Confirm", ".UTF16");
-                                CFI.setElement("Type", "Document");
+                                CFI.SetElement("Confirm", ".UTF16");
+                                CFI.SetElement("Type", "Document");
                                 Identified=true; 
                                 found = true;
-                                CFI.setElement("Text", "true");
-                                CFI.addElement("Details", "UTF-16 Text File");
+                                CFI.SetElement("Text", "true");
+                                CFI.AddElement("Details", "UTF-16 Text File");
                             }
                         }
                     }
@@ -8344,11 +8340,11 @@ namespace AbsolutionLib
                             {
                                 if (Chunk[1] == 0xBF)
                                 {
-                                    CFI.setElement("Confirm", ".UTF8");
-                                    CFI.setElement("Type", "Document");
+                                    CFI.SetElement("Confirm", ".UTF8");
+                                    CFI.SetElement("Type", "Document");
                                     Identified=true; found = true;
-                                    CFI.setElement("Text", "true");
-                                    CFI.addElement("Details", "UTF-8 Text File");
+                                    CFI.SetElement("Text", "true");
+                                    CFI.AddElement("Details", "UTF-8 Text File");
                                 }
                             }
                         }
@@ -8358,7 +8354,7 @@ namespace AbsolutionLib
 
             if (TextHTML)
             {
-                CFI.setElement("Text", "true");
+                CFI.SetElement("Text", "true");
             }
 
             if (keepCount)
@@ -8366,7 +8362,7 @@ namespace AbsolutionLib
                 if (Identified) identifiedFiles++;
             }
 
-            if (CFI.getElement("Executable") == "true")
+            if (CFI.GetElement("Executable") == "true")
             {
                 identifyExecutable(Chunk, ChunkSize, CFI);
             }
@@ -8390,7 +8386,7 @@ namespace AbsolutionLib
                             {
                                 // This is a PE/COFF Windows file
                                 found = true;
-                                fileinfo.setElement("Details", "Microsoft Windows PE/COFF");
+                                fileinfo.SetElement("Details", "Microsoft Windows PE/COFF");
                             }
                         }
                     }

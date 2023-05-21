@@ -8,12 +8,19 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	<Title>CanOpener</Title>
     <Description>Automatically detects and reads from multiple compressed file types regardless of file extension</Description>
-	<Authors>Data Dragon</Authors>
+	<Authors>Datendrache</Authors>
     <Copyright>Copyright 2003-2023 by Eric Knight</Copyright>
+    <AssemblyName>Proliferation.CanOpener</AssemblyName>
+    <PackageProjectUrl>https://github.com/datendrache/CanOpener</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/datendrache/CanOpener.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Proliferation; Archives</PackageTags>
+    <PackageReleaseNotes>CanOpener updated for Fatum 1.0.2</PackageReleaseNotes>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FatumCore" Version="1.0.0" />
+    <PackageReference Include="Proliferation.Fatum" Version="1.0.2" />
     <PackageReference Include="SharpCompress" Version="0.33.0" />
   </ItemGroup>
 
